@@ -1,0 +1,62 @@
+import {
+  Armchair,
+  Briefcase,
+  Building2,
+  ClipboardList,
+  Cross,
+  Factory,
+  FileCheck2,
+  HandHeart,
+  HardHat,
+  Home,
+  Hospital,
+  Landmark,
+  PawPrint,
+  School,
+  Search,
+  Shield,
+  Shirt,
+  Siren,
+  SprayCan,
+  Stethoscope,
+  Trash2,
+  Trees,
+  Truck,
+  Users,
+  UtensilsCrossed,
+  type LucideProps,
+} from "lucide-react";
+import type { IconName } from "@/lib/data";
+
+const map: Record<IconName, React.ComponentType<LucideProps>> = {
+  paw: PawPrint,
+  stethoscope: Stethoscope,
+  bench: Armchair,
+  trees: Trees,
+  cross: Cross,
+  "heart-hand": HandHeart,
+  shirt: Shirt,
+  "hard-hat": HardHat,
+  spray: SprayCan,
+  trash: Trash2,
+  utensils: UtensilsCrossed,
+  briefcase: Briefcase,
+  landmark: Landmark,
+  shield: Shield,
+  hospital: Hospital,
+  school: School,
+  factory: Factory,
+  users: Users,
+  building: Building2,
+  home: Home,
+  siren: Siren,
+  search: Search,
+  clipboard: ClipboardList,
+  "file-check": FileCheck2,
+  truck: Truck,
+};
+
+export function Icon({ name, ...props }: { name: IconName } & LucideProps) {
+  const C = map[name];
+  return <C aria-hidden="true" strokeWidth={1.5} {...props} />;
+}

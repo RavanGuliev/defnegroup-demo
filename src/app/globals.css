@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+/*
+ * DEFNE GROUP dizayn tokenləri (ikinci mərhələ sənədi, bölmə 3)
+ *   Əsas yaşıl      #00704A
+ *   Korporativ mor  #702F8A
+ *   Köməkçi tünd    #10243F  — yalnız köməkçi rəng, sayta hakim olmamalıdır
+ *   Şrift           Manrope (başlıq 600–700, mətn 400–500, düymə 600)
+ */
+@theme {
+  /* Tam masaüstü menyunun göründüyü nöqtə (8 menyu + düymələr) */
+  --breakpoint-nav: 80rem;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary: #00704a;
+  --color-primary-dark: #005a3b;
+  --color-primary-light: #e6f1ed;
+  --color-accent: #702f8a;
+  --color-accent-light: #f3ecf6;
+  --color-navy: #10243f;
+  --color-ink: #16191d;
+  --color-charcoal: #262a2f;
+  --color-muted: #666b72;
+  --color-line: #e5e6e3;
+  --color-light: #f7f7f5;
+  --color-studio: #f4f5f3;
+  --color-night: #13171c;
+
+  --text-hero: clamp(2.125rem, 1.15rem + 3.9vw, 4.25rem);
+  --text-section: clamp(2rem, 1.3rem + 2vw, 3.25rem);
+  --text-card: clamp(1.1875rem, 1.05rem + 0.55vw, 1.5rem);
+  --text-stat: clamp(2.25rem, 1.4rem + 2.6vw, 4rem);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .container-site {
+    @apply mx-auto w-full max-w-[1440px] px-4 min-[390px]:px-5 sm:px-8 lg:px-12;
+  }
+
+  .type-kicker {
+    @apply text-[11px] font-semibold tracking-[0.16em] text-primary uppercase sm:text-[12px];
+  }
+  .type-h1 {
+    font-size: var(--text-hero);
+    @apply leading-[1.06] font-bold tracking-[-0.035em];
+  }
+  .type-h2 {
+    font-size: var(--text-section);
+    @apply leading-[1.1] font-bold tracking-[-0.035em];
+  }
+  .type-h3 {
+    font-size: var(--text-card);
+    @apply leading-[1.25] font-semibold tracking-[-0.02em];
+  }
+  .type-body {
+    @apply text-[15px] leading-[1.65] text-muted sm:text-base sm:leading-[1.7];
+  }
+  .type-small {
+    @apply text-[12px] font-semibold tracking-[0.14em] uppercase;
+  }
+  .type-stat {
+    font-size: var(--text-stat);
+    @apply leading-none font-bold tracking-[-0.04em];
+  }
+
+  .section-home {
+    @apply py-[72px] lg:py-[120px];
+  }
+  .section-home-first {
+    @apply pt-16 pb-[72px] lg:pt-24 lg:pb-[120px];
+  }
+  .section-stack {
+    @apply mt-10 lg:mt-16;
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-[6px] bg-primary px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors duration-200 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-outline {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-[6px] border border-line bg-white px-6 py-3 text-sm font-semibold tracking-wide text-ink transition-colors duration-200 hover:border-ink;
+  }
+  .cta-text {
+    @apply inline-flex min-h-12 items-center gap-2 text-[15px] font-semibold text-ink transition-colors duration-300 hover:text-primary;
+  }
+
+  .field-label {
+    @apply mb-2 block text-[13px] font-semibold text-ink;
+  }
+  .field-input {
+    @apply block min-h-12 w-full rounded-[6px] border border-line bg-white px-4 py-3 text-[15px] text-ink transition-colors placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/15 focus:outline-none aria-[invalid=true]:border-red-600;
+  }
+
+  /* Loqodakı yarpaq formasından çox zəif dekorativ motiv (sənəd, bölmə 3) */
+  .leaf-motif {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath d='M40 120C40 70 70 40 120 40c0 50-30 80-80 80Z' fill='none' stroke='%23ffffff' stroke-opacity='.035' stroke-width='1.5'/%3E%3Cpath d='M40 120 120 40' stroke='%23ffffff' stroke-opacity='.025' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  .leaf-motif-dark {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath d='M40 120C40 70 70 40 120 40c0 50-30 80-80 80Z' fill='none' stroke='%2300704A' stroke-opacity='.035' stroke-width='1.5'/%3E%3Cpath d='M40 120 120 40' stroke='%2300704A' stroke-opacity='.025' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+}
+
+/* Hero karusel */
+.hero-slide {
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.hero-slide.is-active {
+  opacity: 1;
+}
+.hero-slide.is-active .hero-photo {
+  animation: hero-zoom 8s ease-out both;
+}
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.hero-progress-fill {
+  transform-origin: left;
+  animation: hero-progress linear both;
+}
+@keyframes hero-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Görünüşə daxil olanda yumşaq üzə çıxma */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide,
+  .reveal {
+    transition: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  .hero-slide.is-active .hero-photo,
+  .hero-progress-fill {
+    animation: none;
+  }
+}
