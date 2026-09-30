@@ -9,7 +9,7 @@
  */
 @theme {
   /* Tam masaüstü menyunun göründüyü nöqtə (8 menyu + düymələr) */
-  --breakpoint-nav: 80rem;
+  --breakpoint-nav: 90rem;
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
@@ -70,6 +70,11 @@ body {
     font-size: var(--text-hero);
     @apply leading-[1.06] font-bold tracking-[-0.035em];
   }
+  /* İç səhifə H1 — masaüstü 36–44 px, mobil 28–32 px (düzəliş tapşırığı, bölmə 6) */
+  .type-h1-inner {
+    font-size: clamp(1.75rem, 1.25rem + 1.6vw, 2.75rem);
+    @apply leading-[1.12] font-bold tracking-[-0.03em];
+  }
   .type-h2 {
     font-size: var(--text-section);
     @apply leading-[1.1] font-bold tracking-[-0.035em];
@@ -93,7 +98,7 @@ body {
     @apply py-[72px] lg:py-[120px];
   }
   .section-home-first {
-    @apply pt-16 pb-[72px] lg:pt-24 lg:pb-[120px];
+    @apply pt-12 pb-[72px] lg:pt-16 lg:pb-[120px];
   }
   .section-stack {
     @apply mt-10 lg:mt-16;

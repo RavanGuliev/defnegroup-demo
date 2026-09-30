@@ -1,15 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
-import { getCategory, pad2, type Solution } from "@/lib/data";
+import { useLang } from "@/i18n/client";
+import { getDict } from "@/i18n/dictionaries";
+import { db, pad2, type Solution } from "@/lib/data";
+import Link from "../Link";
 import { Icon } from "../Icon";
 import { Media } from "../Media";
 
 export function SolutionsAccordion({ solutions }: { solutions: Solution[] }) {
   const [open, setOpen] = useState(0);
   const current = solutions[open] ?? solutions[0];
+  const lang = useLang();
+  const t = getDict(lang).solutionsAcc;
+  const { getGroupByCode } = db(lang);
 
   return (
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(280px,0.88fr)] lg:gap-14">
@@ -51,7 +56,7 @@ export function SolutionsAccordion({ solutions }: { solutions: Solution[] }) {
                       ))}
                     </ul>
                     <Link href={`/cozum-alanlari/${s.slug}`} className="group cta-text mt-4 text-primary">
-                      Çözümü incele
+                      {t.inspect}
                       <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
                     </Link>
                   </div>
@@ -68,11 +73,11 @@ export function SolutionsAccordion({ solutions }: { solutions: Solution[] }) {
         <div className="absolute inset-x-0 bottom-0 p-7">
           <Icon name={current.icon} className="size-8 text-[#5fd09d]" />
           <p className="type-h3 mt-4 text-white">{current.name}</p>
-          <p className="mt-3 text-[15px] leading-[1.65] text-white/70">İlgili ürün grupları</p>
+          <p className="mt-3 text-[15px] leading-[1.65] text-white/70">{t.relatedGroups}</p>
           <ul className="mt-2 flex flex-wrap gap-2">
-            {current.categorySlugs.map((c) => (
+            {current.groupCodes.map((c) => (
               <li key={c} className="rounded-full border border-white/20 px-3 py-1 text-[12px] text-white/85">
-                {getCategory(c)?.name}
+                {getGroupByCode(c)?.name}
               </li>
             ))}
           </ul>

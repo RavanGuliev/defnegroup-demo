@@ -1,12 +1,17 @@
-import Link from "next/link";
-import { categories, solutions } from "@/lib/data";
+import { getDict } from "@/i18n/dictionaries";
+import { getLang } from "@/i18n/server";
+import { db, groupHref } from "@/lib/data";
 import { mainNav, site } from "@/lib/site";
+import Link from "./Link";
 import { Logo } from "./Logo";
 
 const colTitle = "text-[11px] font-semibold tracking-[0.18em] text-white/40 uppercase";
 const linkCls = "inline-flex min-h-10 items-center text-sm text-white/65 transition-colors duration-200 hover:text-white";
 
-export function Footer() {
+export async function Footer() {
+  const lang = await getLang();
+  const t = getDict(lang);
+  const { groups, solutions } = db(lang);
   const c = site.contact;
   return (
     <footer className="leaf-motif bg-navy text-white">
@@ -15,20 +20,20 @@ export function Footer() {
           <div className="sm:col-span-2 lg:col-span-3 xl:col-span-1">
             <Logo tone="light" />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/55">
-              Kamu kurumları ve özel sektör için güvenilir tedarik ve proje çözümleri.
+              {t.meta.tagline}
             </p>
             <Link href="/teklif-listem#teklif-formu" className="btn-primary mt-6">
-              Teklif Talebi Oluşturun
+              {t.common.createQuoteRequest}
             </Link>
           </div>
 
           <div>
-            <p className={colTitle}>Hızlı Menü</p>
+            <p className={colTitle}>{t.common.quickMenu}</p>
             <ul className="mt-5 space-y-1">
               {mainNav.slice(1).map((i) => (
                 <li key={i.href}>
                   <Link className={linkCls} href={i.href}>
-                    {i.label}
+                    {t.nav[i.key]}
                   </Link>
                 </li>
               ))}
@@ -36,25 +41,25 @@ export function Footer() {
           </div>
 
           <div>
-            <p className={colTitle}>Ürün Grupları</p>
+            <p className={colTitle}>{t.nav.productGroups}</p>
             <ul className="mt-5 space-y-1">
-              {categories.slice(0, 8).map((cat) => (
-                <li key={cat.slug}>
-                  <Link className={linkCls} href={`/urunler/${cat.slug}`}>
-                    {cat.name}
+              {groups.slice(0, 8).map((g) => (
+                <li key={g.code}>
+                  <Link className={linkCls} href={groupHref(g)}>
+                    {g.name}
                   </Link>
                 </li>
               ))}
               <li>
                 <Link className={`${linkCls} font-semibold text-white`} href="/urunler">
-                  Tüm ürünler →
+                  {t.common.allGroups(groups.length)}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <p className={colTitle}>Çözüm Alanları</p>
+            <p className={colTitle}>{t.nav.solutions}</p>
             <ul className="mt-5 space-y-1">
               {solutions.map((s) => (
                 <li key={s.slug}>
@@ -67,7 +72,7 @@ export function Footer() {
           </div>
 
           <div>
-            <p className={colTitle}>İletişim</p>
+            <p className={colTitle}>{t.nav.contact}</p>
             <ul className="mt-5 space-y-1 text-sm text-white/65">
               {c.phone && (
                 <li>
@@ -93,10 +98,10 @@ export function Footer() {
       </div>
       <div className="border-t border-white/10">
         <div className="container-site flex flex-col gap-2 py-5 text-sm text-white/40 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} DEFNE GROUP. Tüm hakları saklıdır.</p>
+          <p>© {new Date().getFullYear()} DEFNE GROUP. {t.common.allRights}</p>
           <div className="flex gap-6">
             <Link className="inline-flex min-h-11 items-center hover:text-white/75" href="/kvkk">
-              KVKK Aydınlatma Metni
+              {t.nav.kvkk}
             </Link>
             <Link className="inline-flex min-h-11 items-center hover:text-white/75" href="/iletisim">
               {site.domain}

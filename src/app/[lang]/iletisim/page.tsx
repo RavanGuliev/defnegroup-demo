@@ -1,0 +1,114 @@
+import { ClipboardList, Clock, Mail, MapPin, Phone } from "lucide-react";
+import { ContactForm } from "@/components/ContactForm";
+import Link from "@/components/Link";
+import { PageHero } from "@/components/ui";
+import { getDict } from "@/i18n/dictionaries";
+import { getLang, pageMeta } from "@/i18n/server";
+import { site } from "@/lib/site";
+
+const copy = {
+  tr: {
+    description: "Ürün, tedarik ve teklif talepleriniz için DEFNE GROUP ile iletişime geçin.",
+    title: "Bize ulaşın",
+    text: "Ürün, tedarik, teknik destek veya teklif talepleriniz için ekibimize ulaşabilirsiniz.",
+    email: "E-posta",
+    quotes: "Teklif talepleri",
+    phone: "Telefon",
+    address: "Adres",
+    hours: "Çalışma saatleri",
+    directKicker: "Doğrudan iletişim",
+    directTitle: "Doğrudan iletişime geçin",
+    quoteTitle: "Fiyat teklifi mi almak istiyorsunuz?",
+    quoteText: "Ürünleri Teklif Listenize ekleyin veya teknik şartnamenizi yükleyin.",
+    formKicker: "İletişim formu",
+    formTitle: "Mesaj gönderin",
+  },
+  az: {
+    description: "Məhsul, təchizat və təklif sorğularınız üçün DEFNE GROUP ilə əlaqə saxlayın.",
+    title: "Bizimlə əlaqə",
+    text: "Məhsul, təchizat, texniki dəstək və ya təklif sorğularınız üçün komandamızla əlaqə saxlaya bilərsiniz.",
+    email: "E-poçt",
+    quotes: "Təklif sorğuları",
+    phone: "Telefon",
+    address: "Ünvan",
+    hours: "İş saatları",
+    directKicker: "Birbaşa əlaqə",
+    directTitle: "Birbaşa əlaqə saxlayın",
+    quoteTitle: "Qiymət təklifi almaq istəyirsiniz?",
+    quoteText: "Məhsulları Təklif Siyahınıza əlavə edin və ya texniki şərtnamənizi yükləyin.",
+    formKicker: "Əlaqə forması",
+    formTitle: "Mesaj göndərin",
+  },
+};
+
+export async function generateMetadata() {
+  const lang = await getLang();
+  return pageMeta("/iletisim", { title: getDict(lang).nav.contact, description: copy[lang].description });
+}
+
+export default async function ContactPage() {
+  const lang = await getLang();
+  const t = copy[lang];
+  const d = getDict(lang);
+  const c = site.contact;
+  const cards = [
+    { icon: Mail, label: t.email, value: c.email, href: `mailto:${c.email}` },
+    { icon: ClipboardList, label: t.quotes, value: c.quoteEmail, href: `mailto:${c.quoteEmail}` },
+    ...(c.phone ? [{ icon: Phone, label: t.phone, value: c.phone, href: `tel:${c.phoneHref}` }] : []),
+    ...(c.address ? [{ icon: MapPin, label: t.address, value: c.address, href: undefined }] : []),
+    ...(c.hours.length ? [{ icon: Clock, label: t.hours, value: c.hours.join(" · "), href: undefined }] : []),
+  ];
+
+  return (
+    <>
+      <PageHero
+        kicker={d.nav.contact}
+        title={t.title}
+        text={t.text}
+        crumbs={[{ label: d.nav.contact }]}
+        icon="building"
+      />
+      <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
+        <div className="container-site grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-16">
+          <div>
+            <p className="type-kicker">01 — {t.directKicker}</p>
+            <h2 className="type-h2 mt-4 text-ink">{t.directTitle}</h2>
+            <ul className="mt-8 grid gap-3">
+              {cards.map((x) => (
+                <li key={x.label} className="flex items-start gap-4 rounded-[8px] border border-line bg-white p-5">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary">
+                    <x.icon className="size-5" strokeWidth={1.5} aria-hidden />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="type-small block text-muted">{x.label}</span>
+                    {x.href ? (
+                      <a href={x.href} className="mt-1 block text-[16px] font-semibold break-words text-ink hover:text-primary">
+                        {x.value}
+                      </a>
+                    ) : (
+                      <span className="mt-1 block text-[16px] text-ink">{x.value}</span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 rounded-[8px] bg-navy p-6 text-white">
+              <p className="font-semibold">{t.quoteTitle}</p>
+              <p className="mt-2 text-[14px] leading-[1.6] text-white/65">{t.quoteText}</p>
+              <Link href="/teklif-listem#teklif-formu" className="btn-primary mt-5">
+                {d.common.createQuoteRequest}
+              </Link>
+            </div>
+          </div>
+          <div>
+            <p className="type-kicker">02 — {t.formKicker}</p>
+            <h2 className="type-h2 mt-4 text-ink">{t.formTitle}</h2>
+            <div className="mt-8">
+              <ContactForm />
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

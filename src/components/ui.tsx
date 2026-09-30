@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { getDict } from "@/i18n/dictionaries";
+import { getLang } from "@/i18n/server";
+import Link from "./Link";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import type { IconName } from "@/lib/data";
 import { Icon } from "./Icon";
@@ -51,10 +53,11 @@ export function CtaLink({ href, children, className = "" }: { href: string; chil
 
 export type Crumb = { label: string; href?: string };
 
-export function Breadcrumbs({ items, light }: { items: Crumb[]; light?: boolean }) {
-  const all: Crumb[] = [{ label: "Ana Sayfa", href: "/" }, ...items];
+export async function Breadcrumbs({ items, light }: { items: Crumb[]; light?: boolean }) {
+  const t = getDict(await getLang());
+  const all: Crumb[] = [{ label: t.nav.home, href: "/" }, ...items];
   return (
-    <nav aria-label="Sayfa konumu">
+    <nav aria-label={t.common.breadcrumbAria}>
       <ol className={`flex flex-wrap items-center gap-1 text-[13px] ${light ? "text-white/60" : "text-muted"}`}>
         {all.map((c, i) => (
           <li key={i} className="inline-flex items-center gap-1">
@@ -103,15 +106,15 @@ export function PageHero({
         <Icon
           name={icon}
           strokeWidth={0.8}
-          className="pointer-events-none absolute top-1/2 right-[6%] -z-10 hidden size-[280px] -translate-y-1/2 text-white/[0.07] lg:block"
+          className="pointer-events-none absolute top-1/2 right-[6%] -z-10 hidden size-[200px] -translate-y-1/2 text-white/[0.07] lg:block"
         />
       )}
       <span className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" aria-hidden />
-      <div className="container-site py-12 sm:py-16 lg:py-[88px]">
+      <div className="container-site py-8 sm:py-10 lg:py-14">
         <Breadcrumbs items={crumbs} light />
-        <p className="type-kicker mt-8 text-[#6fd3a8]">{kicker}</p>
-        <h1 className="type-h1 mt-4 max-w-[900px]">{title}</h1>
-        {text && <p className="mt-5 max-w-[640px] text-[15px] leading-[1.7] text-white/70 sm:text-[17px]">{text}</p>}
+        <p className="type-kicker mt-6 text-[#6fd3a8]">{kicker}</p>
+        <h1 className="type-h1-inner mt-3 max-w-[900px]">{title}</h1>
+        {text && <p className="mt-4 max-w-[640px] text-[15px] leading-[1.7] text-white/70 sm:text-[17px]">{text}</p>}
         {children}
       </div>
     </section>
@@ -119,17 +122,18 @@ export function PageHero({
 }
 
 /* Son çağırış (sənəd, bölmə 5) */
-export function FinalCta() {
+export async function FinalCta() {
+  const t = getDict(await getLang()).cta;
   return (
     <section className="relative isolate overflow-hidden bg-primary text-white">
       <div className="leaf-motif absolute inset-0 -z-10" aria-hidden />
       <div className="absolute -top-24 -right-24 -z-10 size-[420px] rounded-full bg-accent/30 blur-3xl" aria-hidden />
       <div className="container-site flex flex-col gap-8 py-16 lg:flex-row lg:items-center lg:justify-between lg:py-24">
         <Reveal className="max-w-[760px]">
-          <p className="type-kicker text-white/70">Özel çözüm</p>
-          <h2 className="type-h2 mt-4">İhtiyacınız olan ürünü bulamadınız mı?</h2>
+          <p className="type-kicker text-white/70">{t.kicker}</p>
+          <h2 className="type-h2 mt-4">{t.title}</h2>
           <p className="mt-5 text-[16px] leading-[1.7] text-white/80 sm:text-[18px]">
-            Teknik şartnamenizi gönderin, size özel çözüm ve teklif hazırlayalım.
+            {t.text}
           </p>
         </Reveal>
         <Reveal className="flex shrink-0 flex-col gap-3 sm:flex-row" delay={120}>
@@ -137,14 +141,14 @@ export function FinalCta() {
             href="/teklif-listem#teklif-formu"
             className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-[6px] bg-white px-7 text-[14px] font-semibold tracking-wide text-primary transition-colors hover:bg-light"
           >
-            Şartname Gönderin
+            {t.send}
             <ArrowRight className="size-4" aria-hidden />
           </Link>
           <Link
             href="/iletisim"
             className="inline-flex min-h-[52px] items-center justify-center rounded-[6px] border border-white/40 px-7 text-[14px] font-semibold tracking-wide text-white transition-colors hover:border-white hover:bg-white/10"
           >
-            Bize Ulaşın
+            {t.contact}
           </Link>
         </Reveal>
       </div>
@@ -152,13 +156,4 @@ export function FinalCta() {
   );
 }
 
-/* Hazır olmayan bölmə — saxta məzmun əvəzinə (sənəd, bölmə 7) */
-export function EmptyState({ title, text, action }: { title: string; text: string; action?: React.ReactNode }) {
-  return (
-    <div className="leaf-motif-dark rounded-[8px] border border-dashed border-line bg-light px-6 py-14 text-center sm:py-20">
-      <p className="type-h3 text-ink">{title}</p>
-      <p className="type-body mx-auto mt-3 max-w-[520px]">{text}</p>
-      {action && <div className="mt-8 flex justify-center">{action}</div>}
-    </div>
-  );
-}
+export { EmptyState } from "./EmptyState";

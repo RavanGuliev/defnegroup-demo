@@ -7,6 +7,21 @@
  * (ikinci mərhələ sənədi, bölmə 7). Gələcəkdə bu məlumatlar admin paneli / API-dən gələcək.
  */
 
+import type { Locale } from "../i18n/config";
+import {
+  azCatalogs,
+  azCatalogTypes,
+  azGroups,
+  azProcessSteps,
+  azProducts,
+  azSectors,
+  azSolutions,
+  azSubcategories,
+  azSubFallback,
+  azTrustItems,
+  azUsageAreas,
+} from "./content-az";
+
 export type IconName =
   | "paw"
   | "stethoscope"
@@ -32,114 +47,213 @@ export type IconName =
   | "search"
   | "clipboard"
   | "file-check"
-  | "truck";
+  | "truck"
+  | "sofa"
+  | "traffic-cone"
+  | "tree-pine"
+  | "axe"
+  | "brick"
+  | "bug"
+  | "flag";
 
-export type Category = {
+/* ---------- Ürün grupları: 17 əsas qrup / 107 alt bölmə ----------
+ * Mənbə: DEFNE_Icraci_Duzelis_Tapsirigi_2026_09_29 (bölmə 2) və 27.09.2026 tarixli
+ * 17/107 siyahısı. Kodlar sabit daxili istinaddır; ad, kod və sıra dəyişdirilmir.
+ */
+
+export type Group = {
+  code: string;
   slug: string;
   name: string;
-  short: string;
-  description: string;
   icon: IconName;
+  /** Təsdiqlənmiş alt bölmə sayı — hamısına avtomatik 6 tətbiq edilmir. */
+  subCount: number;
   image?: string;
   featured?: boolean;
 };
 
-export const categories: Category[] = [
+export const groups: Group[] = [
   {
-    slug: "sokak-hayvanlari-ekipmanlari",
-    name: "Sokak Hayvanları Ekipmanları",
-    short: "Barınak, yakalama, besleme ve bakım çözümleri.",
-    description:
-      "Belediye barınakları ve saha ekipleri için yakalama, taşıma, besleme ve bakım ekipmanları.",
+    code: "01",
+    slug: "hayvan-refahi-ve-veteriner-cozumleri",
+    name: "Hayvan Refahı & Veteriner Çözümleri",
     icon: "paw",
+    subCount: 6,
     featured: true,
   },
   {
-    slug: "veteriner-ve-klinik-urunleri",
-    name: "Veteriner ve Klinik Ürünleri",
-    short: "Muayene, cerrahi ve klinik donanım.",
-    description: "Veteriner klinikleri ve barınak revirleri için muayene, cerrahi ve sarf ürünleri.",
-    icon: "stethoscope",
-    featured: true,
-  },
-  {
-    slug: "kent-mobilyalari",
-    name: "Kent Mobilyaları",
-    short: "Oturma grupları, çöp kutuları, bariyerler.",
-    description: "Meydan, park ve kamusal alanlar için dayanıklı ve estetik kent mobilyaları.",
-    icon: "bench",
-    featured: true,
-  },
-  {
-    slug: "park-ve-bahce-ekipmanlari",
-    name: "Park ve Bahçe Ekipmanları",
-    short: "Oyun grupları, spor aletleri, peyzaj ürünleri.",
-    description: "Park, bahçe ve rekreasyon alanları için oyun, spor ve peyzaj ekipmanları.",
+    code: "02",
+    slug: "peyzaj-park-ve-rekreasyon-cozumleri",
+    name: "Peyzaj, Park & Rekreasyon Çözümleri",
     icon: "trees",
+    subCount: 6,
+    featured: true,
   },
   {
-    slug: "tibbi-ve-medikal-urunler",
-    name: "Tıbbi ve Medikal Ürünler",
-    short: "Medikal sarf, ilk yardım ve hasta bakım ürünleri.",
-    description: "Sağlık kurumları ve kamu birimleri için medikal sarf, ilk yardım ve hasta bakım ürünleri.",
+    code: "03",
+    slug: "saglik-ve-medikal-cozumler",
+    name: "Sağlık & Medikal Çözümler",
     icon: "cross",
+    subCount: 6,
     featured: true,
   },
   {
-    slug: "sosyal-yardim-ve-afet-urunleri",
-    name: "Sosyal Yardım ve Afet Ürünleri",
-    short: "Çadır, battaniye, hijyen kiti ve yaşam alanı ürünleri.",
-    description:
-      "Sosyal hizmet kurumları ve afet koordinasyonu için barınma, hijyen ve temel ihtiyaç ürünleri.",
-    icon: "heart-hand",
-    featured: true,
-  },
-  {
-    slug: "uniforma-ve-is-kiyafetleri",
-    name: "Üniforma ve İş Kıyafetleri",
-    short: "Kurumsal üniforma, saha ve iş kıyafetleri.",
-    description: "Kurum kimliğine uygun üniforma, saha kıyafeti ve mevsimsel iş giyim çözümleri.",
+    code: "04",
+    slug: "kurumsal-giyim-ve-is-kiyafetleri",
+    name: "Kurumsal Giyim & İş Kıyafetleri",
     icon: "shirt",
+    subCount: 6,
     featured: true,
   },
   {
-    slug: "is-guvenligi-ve-kkd",
-    name: "İş Güvenliği ve KKD",
-    short: "Kişisel koruyucu donanım ve saha güvenliği.",
-    description: "Saha ekipleri için kişisel koruyucu donanım, işaretleme ve güvenlik ekipmanları.",
-    icon: "hard-hat",
+    code: "05",
+    slug: "afet-acil-durum-ve-insani-yardim",
+    name: "Afet, Acil Durum & İnsani Yardım",
+    icon: "siren",
+    subCount: 8,
+    featured: true,
   },
   {
-    slug: "dezenfeksiyon-ve-hijyen",
-    name: "Dezenfeksiyon ve Hijyen",
-    short: "Dezenfektan, ilaçlama ve hijyen ekipmanları.",
-    description: "Kurumsal alanlar ve saha uygulamaları için dezenfeksiyon, ilaçlama ve hijyen çözümleri.",
+    code: "06",
+    slug: "kurumsal-kamu-ve-endustriyel-mobilya",
+    name: "Kurumsal, Kamu & Endüstriyel Mobilya",
+    icon: "sofa",
+    subCount: 6,
+  },
+  {
+    code: "07",
+    slug: "kentsel-altyapi-ve-kamusal-alan-cozumleri",
+    name: "Kentsel Altyapı & Kamusal Alan Çözümleri",
+    icon: "bench",
+    subCount: 6,
+    featured: true,
+  },
+  {
+    code: "08",
+    slug: "temizlik-hijyen-ve-sanitasyon",
+    name: "Temizlik, Hijyen & Sanitasyon",
     icon: "spray",
+    subCount: 7,
     featured: true,
   },
   {
-    slug: "temizlik-ve-atik-yonetimi",
-    name: "Temizlik ve Atık Yönetimi",
-    short: "Konteyner, temizlik ekipmanı ve sarf.",
-    description: "Atık konteynerleri, temizlik makineleri ve kurumsal temizlik sarf malzemeleri.",
-    icon: "trash",
+    code: "09",
+    slug: "sosyal-destek-ve-refah-cozumleri",
+    name: "Sosyal Destek & Refah Çözümleri",
+    icon: "heart-hand",
+    subCount: 7,
   },
   {
-    slug: "otel-restoran-catering-ekipmanlari",
-    name: "Otel, Restoran ve Catering",
-    short: "Mutfak, servis ve konaklama ekipmanları.",
-    description: "Toplu yemek, konaklama ve servis alanları için profesyonel ekipman ve sarf ürünleri.",
+    code: "10",
+    slug: "is-guvenligi-ve-koruyucu-ekipman",
+    name: "İş Güvenliği & Koruyucu Ekipman",
+    icon: "hard-hat",
+    subCount: 6,
+  },
+  {
+    code: "11",
+    slug: "otel-restoran-ve-profesyonel-mutfak-cozumleri",
+    name: "Otel, Restoran & Profesyonel Mutfak Çözümleri",
     icon: "utensils",
+    subCount: 7,
     featured: true,
   },
   {
-    slug: "ofis-ve-kurumsal-tedarik",
-    name: "Ofis ve Kurumsal Tedarik",
-    short: "Ofis mobilyası, kırtasiye ve kurumsal sarf.",
-    description: "Kamu ve özel kurumların ofis mobilyası, kırtasiye ve günlük sarf ihtiyaçları.",
-    icon: "briefcase",
+    code: "12",
+    slug: "trafik-yol-ve-saha-guvenligi",
+    name: "Trafik, Yol & Saha Güvenliği",
+    icon: "traffic-cone",
+    subCount: 6,
+  },
+  {
+    code: "13",
+    slug: "ormancilik-ve-orman-bakim-ekipmanlari",
+    name: "Ormancılık & Orman Bakım Ekipmanları",
+    icon: "tree-pine",
+    subCount: 6,
+  },
+  {
+    code: "14",
+    slug: "ahsap-urunler-ve-yapisal-cozumler",
+    name: "Ahşap Ürünler & Yapısal Çözümler",
+    icon: "axe",
+    subCount: 6,
+  },
+  {
+    code: "15",
+    slug: "insaat-ve-yapi-malzemeleri",
+    name: "İnşaat & Yapı Malzemeleri",
+    icon: "brick",
+    subCount: 6,
+  },
+  {
+    code: "16",
+    slug: "vektor-ve-hasere-kontrol-cozumleri",
+    name: "Vektör & Haşere Kontrol Çözümleri",
+    icon: "bug",
+    subCount: 6,
+  },
+  {
+    code: "17",
+    slug: "bayrak-kurumsal-tanitim-ve-hediye-urunleri",
+    name: "Bayrak, Kurumsal Tanıtım & Hediye Ürünleri",
+    icon: "flag",
+    subCount: 6,
   },
 ];
+
+/*
+ * Alt bölmə adları. Yalnız təsdiqlənmiş adlar yazılır; siyahıda adı olmayan kodlar
+ * "hazırlıq" statusunda qalır (uydurma ad əlavə edilmir). 27.09.2026 tarixli tam
+ * 107 siyahısı gəldikdə qalan adlar bu obyektə əlavə olunur.
+ */
+const subcategoryNames: Record<string, string> = {
+  "01.01": "Hayvan Barınakları ve Ekipmanları",
+  "01.02": "Veteriner Ekipmanları",
+  "01.03": "Hayvan Besleme ve Sulama",
+  "01.04": "Sokak Hayvanları Çözümleri",
+  "01.05": "Hayvan Taşıma ve Koruma",
+  "01.06": "Bakım ve Hijyen Ürünleri",
+  "04.02": "İş Kıyafetleri",
+  "05.07": "İlk Yardım Çantaları ve Setleri",
+  "05.08": "Yangın Güvenliği ve Müdahale Ekipmanları",
+  "07.01": "Kent Mobilyaları",
+  "08.07": "Koku Kontrol Ürünleri ve Sistemleri",
+  "09.07": "Anne ve Bebek Destek Setleri",
+  "10.03": "Koruyucu Giyim",
+  "11.07": "Otel Buklet ve Misafir Karşılama Ürünleri",
+};
+
+export type Subcategory = {
+  code: string;
+  groupCode: string;
+  slug: string;
+  /** Təsdiqlənmiş ad yoxdursa boşdur — `subName()` ilə göstərilir. */
+  name?: string;
+  /** Adı hələ təqdim edilməyən alt bölmə: sınaq mühitində hazırlıq statusu. */
+  pending: boolean;
+};
+
+const trMap: Record<string, string> = { ı: "i", İ: "i", ş: "s", Ş: "s", ğ: "g", Ğ: "g", ü: "u", Ü: "u", ö: "o", Ö: "o", ç: "c", Ç: "c", ə: "e", Ə: "e" };
+export const normalize = (s: string) =>
+  s
+    .replace(/[ıİşŞğĞüÜöÖçÇəƏ]/g, (ch) => trMap[ch] ?? ch)
+    .toLowerCase()
+    .trim();
+const slugify = (s: string) =>
+  normalize(s.replace(/&/g, " ve "))
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+export const subcategories: Subcategory[] = groups.flatMap((g) =>
+  Array.from({ length: g.subCount }, (_, i) => {
+    const code = `${g.code}.${String(i + 1).padStart(2, "0")}`;
+    const name = subcategoryNames[code];
+    return { code, groupCode: g.code, slug: name ? slugify(name) : code.replace(".", "-"), name, pending: !name };
+  }),
+);
+
+export const subName = (s: Subcategory) => s.name ?? `Alt Kategori ${s.code}`;
 
 export type Sector = { slug: string; name: string; description: string; icon: IconName };
 
@@ -200,7 +314,7 @@ export type Solution = {
   need: string;
   description: string;
   scope: string[];
-  categorySlugs: string[];
+  groupCodes: string[];
   sectorSlugs: string[];
   icon: IconName;
 };
@@ -213,7 +327,7 @@ export const solutions: Solution[] = [
     description:
       "Barınak ihtiyaç analizinden kafes, revir, besleme ve hijyen donanımına kadar tüm kalemleri tek projede planlıyoruz.",
     scope: ["İhtiyaç ve kapasite analizi", "Kafes ve yaşam alanı donanımı", "Revir ve klinik ekipmanı", "Hijyen ve dezenfeksiyon planı"],
-    categorySlugs: ["sokak-hayvanlari-ekipmanlari", "veteriner-ve-klinik-urunleri", "dezenfeksiyon-ve-hijyen"],
+    groupCodes: ["01", "08", "16"],
     sectorSlugs: ["belediyeler"],
     icon: "paw",
   },
@@ -224,7 +338,7 @@ export const solutions: Solution[] = [
     description:
       "Kent mobilyası, park ekipmanı ve atık yönetimi ürünlerini proje çizimine ve şartnameye uygun olarak bir araya getiriyoruz.",
     scope: ["Şartname ve metraj uyumu", "Kent mobilyası seçimi", "Park ve oyun alanı ekipmanı", "Atık ve temizlik donatısı"],
-    categorySlugs: ["kent-mobilyalari", "park-ve-bahce-ekipmanlari", "temizlik-ve-atik-yonetimi"],
+    groupCodes: ["07", "02", "08"],
     sectorSlugs: ["belediyeler", "valilikler-ve-kamu-kurumlari"],
     icon: "bench",
   },
@@ -235,7 +349,7 @@ export const solutions: Solution[] = [
     description:
       "Barınma, hijyen, ilk yardım ve temel ihtiyaç ürünlerini kurumunuzun afet planına göre paketleyip tedarik ediyoruz.",
     scope: ["Afet planına göre ürün listesi", "Barınma ve yaşam ürünleri", "Hijyen ve ilk yardım kitleri", "Depolama ve sevk planı"],
-    categorySlugs: ["sosyal-yardim-ve-afet-urunleri", "tibbi-ve-medikal-urunler", "dezenfeksiyon-ve-hijyen"],
+    groupCodes: ["05", "09", "03", "08"],
     sectorSlugs: ["valilikler-ve-kamu-kurumlari", "belediyeler", "sosyal-hizmet-kurumlari"],
     icon: "siren",
   },
@@ -246,7 +360,7 @@ export const solutions: Solution[] = [
     description:
       "Alan tipine göre dezenfektan, ekipman ve sarf planlaması yaparak düzenli ve ölçülebilir bir hijyen programı kuruyoruz.",
     scope: ["Alan ve risk değerlendirmesi", "Ürün ve ekipman seçimi", "Periyodik sarf planı", "Uygulama dokümantasyonu"],
-    categorySlugs: ["dezenfeksiyon-ve-hijyen", "temizlik-ve-atik-yonetimi"],
+    groupCodes: ["08", "16"],
     sectorSlugs: ["saglik", "egitim", "otel-restoran-ve-catering"],
     icon: "spray",
   },
@@ -257,7 +371,7 @@ export const solutions: Solution[] = [
     description:
       "Kurumsal kimliğe uygun üniforma, iş kıyafeti ve KKD ürünlerini beden dağılımı ve sevkiyat planıyla birlikte sunuyoruz.",
     scope: ["Kurum kimliğine uygun tasarım", "Beden ve adet planlaması", "KKD uyum kontrolü", "Toplu paketleme ve sevkiyat"],
-    categorySlugs: ["uniforma-ve-is-kiyafetleri", "is-guvenligi-ve-kkd"],
+    groupCodes: ["04", "10"],
     sectorSlugs: ["jandarma-emniyet-ve-askeri-birimler", "sanayi-ve-ozel-sektor", "belediyeler"],
     icon: "shirt",
   },
@@ -268,7 +382,7 @@ export const solutions: Solution[] = [
     description:
       "Medikal sarf, hasta bakım ürünleri, mobilya ve hijyen kalemlerini tek teklif altında topluyoruz.",
     scope: ["Tesis ihtiyaç listesi", "Medikal ve bakım ürünleri", "Mobilya ve yaşam alanı", "Sarf yenileme planı"],
-    categorySlugs: ["tibbi-ve-medikal-urunler", "sosyal-yardim-ve-afet-urunleri", "ofis-ve-kurumsal-tedarik"],
+    groupCodes: ["03", "09", "06"],
     sectorSlugs: ["saglik", "sosyal-hizmet-kurumlari"],
     icon: "hospital",
   },
@@ -310,7 +424,16 @@ export type Product = {
   slug: string;
   code: string;
   name: string;
-  categorySlug: string;
+  /** Əsas alt bölmə — məhsulun yeganə əsas səhifəsi buradadır. */
+  subCode: string;
+  /** subCode boş olduqda (alt bölmə təsdiqlənməyib) əsas qrup. */
+  groupCode?: string;
+  /** Əlavə keçid verilən qruplar; məhsul nüsxəsi yaradılmır. */
+  crossGroups?: string[];
+  /** false — təsdiqsiz, saytda göstərilmir. */
+  published?: boolean;
+  /** Demo nümunəsi — təsdiqlənmiş məhsul ailəsi deyil, kartda ayrıca işarələnir. */
+  sample?: boolean;
   sectorSlugs: string[];
   usageAreas: string[];
   summary: string;
@@ -328,12 +451,13 @@ export type Product = {
 
 export const usageAreas = ["Barınak", "Saha", "Klinik", "Kamusal alan", "Park", "Mutfak", "Ofis", "Depo"];
 
-export const products: Product[] = [
+export const allProducts: Product[] = [
   {
     slug: "paslanmaz-barinak-kafesi-modul",
     code: "DG-SH-1001",
+    sample: true,
     name: "Paslanmaz Barınak Kafesi (Modüler)",
-    categorySlug: "sokak-hayvanlari-ekipmanlari",
+    subCode: "01.01",
     sectorSlugs: ["belediyeler"],
     usageAreas: ["Barınak", "Klinik"],
     summary: "Modüler, kolay temizlenen, paslanmaz gövdeli barınak kafesi.",
@@ -355,8 +479,9 @@ export const products: Product[] = [
   {
     slug: "yakalama-kementi",
     code: "DG-SH-1002",
+    sample: true,
     name: "Hayvan Yakalama Kementi",
-    categorySlug: "sokak-hayvanlari-ekipmanlari",
+    subCode: "01.04",
     sectorSlugs: ["belediyeler"],
     usageAreas: ["Saha"],
     summary: "Ayarlanabilir, hafif gövdeli, güvenli yakalama kementi.",
@@ -375,8 +500,9 @@ export const products: Product[] = [
   {
     slug: "otomatik-mama-istasyonu",
     code: "DG-SH-1003",
+    sample: true,
     name: "Sokak Hayvanı Mama ve Su İstasyonu",
-    categorySlug: "sokak-hayvanlari-ekipmanlari",
+    subCode: "01.03",
     sectorSlugs: ["belediyeler"],
     usageAreas: ["Kamusal alan", "Park"],
     summary: "Kamusal alanlar için dayanıklı mama ve su istasyonu.",
@@ -395,8 +521,9 @@ export const products: Product[] = [
   {
     slug: "muayene-masasi-paslanmaz",
     code: "DG-VK-2001",
+    sample: true,
     name: "Paslanmaz Muayene Masası",
-    categorySlug: "veteriner-ve-klinik-urunleri",
+    subCode: "01.02",
     sectorSlugs: ["belediyeler", "saglik"],
     usageAreas: ["Klinik"],
     summary: "Klinik ve barınak revirleri için paslanmaz muayene masası.",
@@ -414,8 +541,9 @@ export const products: Product[] = [
   {
     slug: "kent-bank-ahsap-metal",
     code: "DG-KM-3001",
+    sample: true,
     name: "Kent Bankı (Ahşap–Metal)",
-    categorySlug: "kent-mobilyalari",
+    subCode: "07.01",
     sectorSlugs: ["belediyeler", "valilikler-ve-kamu-kurumlari"],
     usageAreas: ["Kamusal alan", "Park"],
     summary: "Emprenyeli ahşap oturak ve metal ayaklı kent bankı.",
@@ -434,8 +562,9 @@ export const products: Product[] = [
   {
     slug: "cop-kutusu-galvaniz",
     code: "DG-KM-3002",
+    sample: true,
     name: "Galvaniz Çöp Kutusu",
-    categorySlug: "kent-mobilyalari",
+    subCode: "07.01",
     sectorSlugs: ["belediyeler"],
     usageAreas: ["Kamusal alan", "Park"],
     summary: "İç kovalı, galvaniz gövdeli kamusal alan çöp kutusu.",
@@ -451,8 +580,9 @@ export const products: Product[] = [
   {
     slug: "ilk-yardim-cantasi",
     code: "DG-TM-4001",
+    sample: true,
     name: "Kurumsal İlk Yardım Çantası",
-    categorySlug: "tibbi-ve-medikal-urunler",
+    subCode: "05.07",
     sectorSlugs: ["valilikler-ve-kamu-kurumlari", "egitim", "sanayi-ve-ozel-sektor"],
     usageAreas: ["Ofis", "Saha"],
     summary: "Kurum ve araçlar için içerik listeli ilk yardım çantası.",
@@ -468,8 +598,9 @@ export const products: Product[] = [
   {
     slug: "afet-battaniyesi",
     code: "DG-SY-5001",
+    sample: true,
     name: "Afet Battaniyesi",
-    categorySlug: "sosyal-yardim-ve-afet-urunleri",
+    subCode: "05.05",
     sectorSlugs: ["valilikler-ve-kamu-kurumlari", "belediyeler", "sosyal-hizmet-kurumlari"],
     usageAreas: ["Depo", "Saha"],
     summary: "Vakumlu paketlenebilen, ısı tutucu afet battaniyesi.",
@@ -485,8 +616,9 @@ export const products: Product[] = [
   {
     slug: "saha-personeli-montu",
     code: "DG-UN-6001",
+    sample: true,
     name: "Saha Personeli Montu",
-    categorySlug: "uniforma-ve-is-kiyafetleri",
+    subCode: "04.02",
     sectorSlugs: ["belediyeler", "jandarma-emniyet-ve-askeri-birimler", "sanayi-ve-ozel-sektor"],
     usageAreas: ["Saha"],
     summary: "Reflektörlü, su itici saha personeli montu.",
@@ -502,8 +634,9 @@ export const products: Product[] = [
   {
     slug: "reflektorlu-yelek",
     code: "DG-KKD-7001",
+    sample: true,
     name: "Reflektörlü İkaz Yeleği",
-    categorySlug: "is-guvenligi-ve-kkd",
+    subCode: "10.03",
     sectorSlugs: ["belediyeler", "sanayi-ve-ozel-sektor"],
     usageAreas: ["Saha"],
     summary: "Yüksek görünürlüklü, logo baskılı ikaz yeleği.",
@@ -518,8 +651,12 @@ export const products: Product[] = [
   {
     slug: "yuzey-dezenfektani",
     code: "DG-DH-8001",
+    sample: true,
     name: "Yüzey Dezenfektanı (Konsantre)",
-    categorySlug: "dezenfeksiyon-ve-hijyen",
+    // 08 daxilində alt bölmə adı hələ təsdiqlənməyib — təsdiqsiz yayımlanmır (bölmə 3).
+    subCode: "",
+    groupCode: "08",
+    published: false,
     sectorSlugs: ["saglik", "egitim", "otel-restoran-ve-catering", "belediyeler"],
     usageAreas: ["Barınak", "Klinik", "Ofis", "Mutfak"],
     summary: "Seyreltilerek kullanılan konsantre yüzey dezenfektanı.",
@@ -538,8 +675,10 @@ export const products: Product[] = [
   {
     slug: "sirt-tipi-ilaclama-pompasi",
     code: "DG-DH-8002",
+    sample: true,
     name: "Sırt Tipi İlaçlama Pompası",
-    categorySlug: "dezenfeksiyon-ve-hijyen",
+    // Vektor/həşərə tətbiqi → 16.01; nasosun təyinatı DEFNE tərəfindən təsdiqlənməlidir (bölmə 3).
+    subCode: "16.01",
     sectorSlugs: ["belediyeler"],
     usageAreas: ["Saha", "Barınak", "Park"],
     summary: "Saha dezenfeksiyon ve ilaçlama uygulamaları için sırt pompası.",
@@ -554,8 +693,11 @@ export const products: Product[] = [
   {
     slug: "tekerlekli-atik-konteyneri",
     code: "DG-TA-9001",
+    sample: true,
     name: "Tekerlekli Atık Konteyneri",
-    categorySlug: "temizlik-ve-atik-yonetimi",
+    subCode: "07.05",
+    // Əlaqəli təmizlik qrupundan eyni məhsula keçid (bölmə 3) — nüsxə yaradılmır.
+    crossGroups: ["08"],
     sectorSlugs: ["belediyeler", "sanayi-ve-ozel-sektor"],
     usageAreas: ["Kamusal alan", "Depo"],
     summary: "Kapaklı, tekerlekli plastik atık konteyneri.",
@@ -570,8 +712,9 @@ export const products: Product[] = [
   {
     slug: "endustriyel-yemek-arabasi",
     code: "DG-ORC-10001",
+    sample: true,
     name: "Paslanmaz Servis Arabası",
-    categorySlug: "otel-restoran-catering-ekipmanlari",
+    subCode: "11.05",
     sectorSlugs: ["otel-restoran-ve-catering", "saglik", "egitim"],
     usageAreas: ["Mutfak"],
     summary: "Toplu yemek servisi için paslanmaz servis arabası.",
@@ -587,8 +730,9 @@ export const products: Product[] = [
   {
     slug: "calisma-masasi-kurumsal",
     code: "DG-OK-11001",
+    sample: true,
     name: "Kurumsal Çalışma Masası",
-    categorySlug: "ofis-ve-kurumsal-tedarik",
+    subCode: "06.01",
     sectorSlugs: ["valilikler-ve-kamu-kurumlari", "egitim"],
     usageAreas: ["Ofis"],
     summary: "Kablo kanallı, kurumsal ofis çalışma masası.",
@@ -603,8 +747,9 @@ export const products: Product[] = [
   {
     slug: "cocuk-oyun-grubu",
     code: "DG-PB-12001",
+    sample: true,
     name: "Çocuk Oyun Grubu",
-    categorySlug: "park-ve-bahce-ekipmanlari",
+    subCode: "02.02",
     sectorSlugs: ["belediyeler", "egitim"],
     usageAreas: ["Park"],
     summary: "Kaydıraklı, tırmanma elemanlı çocuk oyun grubu.",
@@ -625,7 +770,7 @@ export type Catalog = {
   type: "Ürün Kataloğu" | "Teknik Doküman" | "Kurumsal Tanıtım";
   updatedAt: string;
   file?: string;
-  categorySlug?: string;
+  groupCode?: string;
 };
 
 // Kataloqlar DEFNE GROUP tərəfindən təqdim edildikdən sonra `file` sahəsi doldurulacaq.
@@ -637,56 +782,137 @@ export const catalogs: Catalog[] = [
     name: "Sokak Hayvanları Ekipmanları",
     type: "Ürün Kataloğu",
     updatedAt: "2026-09",
-    categorySlug: "sokak-hayvanlari-ekipmanlari",
+    groupCode: "01",
   },
   {
     slug: "kent-mobilyalari-katalogu",
     name: "Kent Mobilyaları",
     type: "Ürün Kataloğu",
     updatedAt: "2026-09",
-    categorySlug: "kent-mobilyalari",
+    groupCode: "07",
   },
   {
     slug: "dezenfeksiyon-teknik",
     name: "Dezenfeksiyon Ürünleri Teknik Dokümanları",
     type: "Teknik Doküman",
     updatedAt: "2026-09",
-    categorySlug: "dezenfeksiyon-ve-hijyen",
+    groupCode: "08",
   },
   {
     slug: "uniforma-katalogu",
     name: "Üniforma ve İş Kıyafetleri",
     type: "Ürün Kataloğu",
     updatedAt: "2026-09",
-    categorySlug: "uniforma-ve-is-kiyafetleri",
+    groupCode: "04",
   },
 ];
 
 /* ---------- yardımcılar ---------- */
 
-export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
+/** Saytda göstərilən məhsullar (təsdiqsiz qeydlər çıxarılır). */
+export const products = allProducts.filter((p) => p.published !== false);
+
+export const getGroup = (slug: string) => groups.find((g) => g.slug === slug);
+export const getGroupByCode = (code: string) => groups.find((g) => g.code === code);
+export const getSub = (code: string) => subcategories.find((s) => s.code === code);
+export const getSubBySlug = (groupCode: string, slug: string) => subcategories.find((s) => s.groupCode === groupCode && s.slug === slug);
+export const subsOfGroup = (groupCode: string) => subcategories.filter((s) => s.groupCode === groupCode);
 export const getSector = (slug: string) => sectors.find((s) => s.slug === slug);
 export const getSolution = (slug: string) => solutions.find((s) => s.slug === slug);
 export const getProduct = (slug: string) => products.find((p) => p.slug === slug);
-export const productsInCategory = (slug: string) => products.filter((p) => p.categorySlug === slug);
+
+export const productGroupCode = (p: Product) => p.groupCode ?? p.subCode.slice(0, 2);
+export const productGroup = (p: Product) => getGroupByCode(productGroupCode(p))!;
+export const productsInSub = (code: string) => products.filter((p) => p.subCode === code);
+export const productsInGroup = (code: string) => products.filter((p) => productGroupCode(p) === code);
+/** Başqa qrupda əsas qeydi olan, bu qrupdan keçid verilən məhsullar. */
+export const linkedProductsForGroup = (code: string) => products.filter((p) => p.crossGroups?.includes(code));
 export const productsInSector = (slug: string) => products.filter((p) => p.sectorSlugs.includes(slug));
-export const productHref = (p: Product) => `/urunler/${p.categorySlug}/${p.slug}`;
+
+export const groupHref = (g: Group) => `/urunler/${g.slug}`;
+export const subHref = (s: Subcategory) => `/urunler/${getGroupByCode(s.groupCode)!.slug}/${s.slug}`;
+export const productHref = (p: Product) => `${subHref(getSub(p.subCode)!)}/${p.slug}`;
+export const allProductsHref = "/urunler/tum-urunler";
 export const pad2 = (n: number) => String(n).padStart(2, "0");
 
-const trMap: Record<string, string> = { ı: "i", İ: "i", ş: "s", Ş: "s", ğ: "g", Ğ: "g", ü: "u", Ü: "u", ö: "o", Ö: "o", ç: "c", Ç: "c" };
-export const normalize = (s: string) =>
-  s
-    .replace(/[ıİşŞğĞüÜöÖçÇ]/g, (ch) => trMap[ch] ?? ch)
-    .toLowerCase()
-    .trim();
+/* ---------- dilə görə məlumat ----------
+ * Struktur (kod, slug, keçid) hər iki dildə eynidir; yalnız mətnlər tərcümə olunur.
+ * Səhifələr `db(lang)` ilə cari dildə massivləri və axtarış funksiyalarını alır.
+ */
 
-/** Ürün adı, ürün kodu ve anahtar kelimeye göre arama (sənəd, bölmə 6.1). */
-export function searchProducts(query: string, list: Product[] = products) {
-  const q = normalize(query);
-  if (!q) return list;
-  const terms = q.split(/\s+/);
-  return list.filter((p) => {
-    const hay = normalize([p.name, p.code, p.summary, ...p.keywords, getCategory(p.categorySlug)?.name ?? ""].join(" "));
-    return terms.every((t) => hay.includes(t));
+function build(lang: Locale) {
+  const az = lang === "az";
+  const usage = (u: string) => (az ? (azUsageAreas[u] ?? u) : u);
+
+  const G: Group[] = az ? groups.map((g) => ({ ...g, name: azGroups[g.code] ?? g.name })) : groups;
+  const S: Subcategory[] = az ? subcategories.map((s) => (azSubcategories[s.code] ? { ...s, name: azSubcategories[s.code] } : s)) : subcategories;
+  const P: (Product & { searchText: string })[] = products.map((p) => {
+    const t = az ? azProducts[p.slug] : undefined;
+    const base = normalize([p.name, p.code, p.summary, ...p.keywords].join(" "));
+    if (!t) return { ...p, searchText: base };
+    return {
+      ...p,
+      name: t.name,
+      summary: t.summary,
+      description: t.description,
+      features: t.features,
+      specs: t.specs.map(([label, value]) => ({ label, value })),
+      variants: t.variants ?? p.variants,
+      packaging: t.packaging,
+      documents: p.documents.map((d, i) => ({ ...d, name: t.documents?.[i] ?? d.name })),
+      usageAreas: p.usageAreas.map(usage),
+      keywords: t.keywords,
+      // Axtarış hər iki dildə işləyir
+      searchText: `${base} ${normalize([t.name, t.summary, ...t.keywords].join(" "))}`,
+    };
   });
+
+  const getGroupByCode = (code: string) => G.find((g) => g.code === code);
+  const getSub = (code: string) => S.find((s) => s.code === code);
+  const subName = (s: Subcategory) => s.name ?? `${az ? azSubFallback : "Alt Kategori"} ${s.code}`;
+  const productGroup = (p: Product) => getGroupByCode(productGroupCode(p))!;
+
+  return {
+    lang,
+    groups: G,
+    subcategories: S,
+    products: P as Product[],
+    sectors: az ? sectors.map((s) => ({ ...s, ...azSectors[s.slug] })) : sectors,
+    solutions: az ? solutions.map((s) => ({ ...s, ...azSolutions[s.slug] })) : solutions,
+    processSteps: az ? processSteps.map((s, i) => ({ ...s, ...azProcessSteps[i] })) : processSteps,
+    trustItems: az ? trustItems.map((t, i) => ({ ...t, title: azTrustItems[i] })) : trustItems,
+    usageAreas: usageAreas.map(usage),
+    catalogs: az ? catalogs.map((c) => ({ ...c, name: azCatalogs[c.slug] ?? c.name, type: (azCatalogTypes[c.type] ?? c.type) as Catalog["type"] })) : catalogs,
+
+    getGroup: (slug: string) => G.find((g) => g.slug === slug),
+    getGroupByCode,
+    getSub,
+    getSubBySlug: (groupCode: string, slug: string) => S.find((s) => s.groupCode === groupCode && s.slug === slug),
+    subsOfGroup: (groupCode: string) => S.filter((s) => s.groupCode === groupCode),
+    getSector: (slug: string) => (az ? sectors.map((s) => ({ ...s, ...azSectors[s.slug] })) : sectors).find((s) => s.slug === slug),
+    getSolution: (slug: string) => (az ? solutions.map((s) => ({ ...s, ...azSolutions[s.slug] })) : solutions).find((s) => s.slug === slug),
+    getProduct: (slug: string) => P.find((p) => p.slug === slug) as Product | undefined,
+    productGroup,
+    productsInSub: (code: string) => P.filter((p) => p.subCode === code) as Product[],
+    productsInGroup: (code: string) => P.filter((p) => productGroupCode(p) === code) as Product[],
+    linkedProductsForGroup: (code: string) => P.filter((p) => p.crossGroups?.includes(code)) as Product[],
+    productsInSector: (slug: string) => P.filter((p) => p.sectorSlugs.includes(slug)) as Product[],
+    subName,
+    /** Ad, kod, açar söz və kateqoriya adına görə axtarış (Türk/Azərbaycan hərfləri normallaşdırılır). */
+    searchProducts(query: string, list: Product[] = P) {
+      const q = normalize(query);
+      if (!q) return list;
+      const terms = q.split(/\s+/);
+      return list.filter((p) => {
+        const own = (p as Product & { searchText?: string }).searchText ?? "";
+        const sub = getSub(p.subCode);
+        const hay = `${own} ${normalize([productGroup(p).name, sub ? subName(sub) : ""].join(" "))}`;
+        return terms.every((t) => hay.includes(t));
+      });
+    },
+  };
 }
+
+export type Db = ReturnType<typeof build>;
+const cache: Partial<Record<Locale, Db>> = {};
+export const db = (lang: Locale): Db => (cache[lang] ??= build(lang));

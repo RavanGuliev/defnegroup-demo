@@ -1,19 +1,22 @@
+import { getDict } from "@/i18n/dictionaries";
+import { getLang } from "@/i18n/server";
 import { site } from "@/lib/site";
 
 /*
  * Kiçik, küncə yerləşən düymə — əsas məzmunu və Teklif düymələrini bağlamamalıdır (sənəd, bölmə 8.1).
  * WhatsApp nömrəsi `site.contact.whatsapp`-a yazılana qədər düymə göstərilmir.
  */
-export function WhatsAppButton() {
+export async function WhatsAppButton() {
   const n = site.contact.whatsapp;
   if (!n) return null;
-  const text = encodeURIComponent("Merhaba, ürün ve tedarik hakkında bilgi almak istiyorum.");
+  const t = getDict(await getLang()).whatsapp;
+  const text = encodeURIComponent(t.text);
   return (
     <a
       href={`https://wa.me/${n}?text=${text}`}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="WhatsApp’tan yazın"
+      aria-label={t.aria}
       className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-[60] inline-flex size-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_rgba(37,211,102,0.35)] transition-transform hover:scale-105 sm:size-14"
     >
       <svg viewBox="0 0 24 24" className="size-6 sm:size-7" fill="currentColor" aria-hidden>

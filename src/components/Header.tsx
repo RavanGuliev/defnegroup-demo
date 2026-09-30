@@ -1,10 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronDown, ClipboardList, Menu, Search, X } from "lucide-react";
+import { localeLabels, locales, stripLocale } from "@/i18n/config";
+import { useLang } from "@/i18n/client";
+import { getDict } from "@/i18n/dictionaries";
 import { mainNav } from "@/lib/site";
+import Link from "./Link";
 import { Logo } from "./Logo";
 import { useQuote } from "./QuoteProvider";
 import { SearchOverlay } from "./SearchOverlay";
@@ -13,8 +16,36 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
 }
 
+/* Dil seçimi — eyni səhifənin digər dildəki ünvanına keçir */
+function LanguageSwitch({ className = "", overHero }: { className?: string; overHero?: boolean }) {
+  const lang = useLang();
+  const path = stripLocale(usePathname());
+  return (
+    <div role="group" aria-label={getDict(lang).common.language} className={`inline-flex items-center rounded-full border p-0.5 ${overHero ? "border-white/30" : "border-line"} ${className}`}>
+      {locales.map((l) => (
+        <Link
+          key={l}
+          href={`/${l}${path === "/" ? "" : path}`}
+          hrefLang={l}
+          lang={l}
+          aria-current={l === lang ? "true" : undefined}
+          title={localeLabels[l].name}
+          className={`inline-flex min-h-9 min-w-10 items-center justify-center rounded-full px-2 text-[12px] font-bold tracking-wide transition-colors ${
+            l === lang ? "bg-primary text-white" : overHero ? "text-white/80 hover:text-white" : "text-charcoal hover:text-primary"
+          }`}
+        >
+          {localeLabels[l].short}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 export function Header() {
-  const pathname = usePathname();
+  const lang = useLang();
+  const t = getDict(lang);
+  const fullPath = usePathname();
+  const pathname = stripLocale(fullPath);
   const { count } = useQuote();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -31,9 +62,9 @@ export function Header() {
   }, []);
 
   // Səhifə dəyişəndə mobil menyunu bağla (render zamanı tənzimləmə)
-  const [lastPath, setLastPath] = useState(pathname);
-  if (lastPath !== pathname) {
-    setLastPath(pathname);
+  const [lastPath, setLastPath] = useState(fullPath);
+  if (lastPath !== fullPath) {
+    setLastPath(fullPath);
     setMenuOpen(false);
     setOpenSub(null);
   }
@@ -55,9 +86,9 @@ export function Header() {
         }`}
       >
         <div className="container-site flex h-[72px] items-center justify-between gap-4 lg:h-[84px]">
-          <Logo tone={overHero ? "light" : "dark"} className={overHero ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]" : ""} />
+          <Logo tone={overHero ? "light" : "dark"} className={`nav:shrink-0 ${overHero ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]" : ""}`} />
 
-          <nav aria-label="Ana menü" className={`hidden items-center gap-[clamp(14px,1.4vw,26px)] nav:flex ${tone}`}>
+          <nav aria-label={t.common.mainMenu} className={`hidden items-center gap-[clamp(12px,1.2vw,26px)] nav:flex ${tone}`}>
             {mainNav.map((item) =>
               item.children ? (
                 <div key={item.href} className="group relative">
@@ -68,7 +99,7 @@ export function Header() {
                       overHero ? "text-white/85 hover:text-white" : "text-charcoal hover:text-primary"
                     }`}
                   >
-                    {item.label}
+                    {t.nav[item.key]}
                     <ChevronDown className="size-3.5 transition-transform group-focus-within:rotate-180 group-hover:rotate-180" aria-hidden />
                     {isActive(pathname, item.href) && <span className="absolute inset-x-0 bottom-0.5 h-0.5 bg-primary" />}
                   </Link>
@@ -82,7 +113,7 @@ export function Header() {
                               pathname === c.href ? "text-primary" : ""
                             }`}
                           >
-                            {c.label}
+                            {t.nav[c.key]}
                           </Link>
                         </li>
                       ))}
@@ -97,7 +128,7 @@ export function Header() {
                     overHero ? "text-white/85 hover:text-white" : "text-charcoal hover:text-primary"
                   }`}
                 >
-                  {item.label}
+                  {t.nav[item.key]}
                   {isActive(pathname, item.href) && <span className="absolute inset-x-0 bottom-0.5 h-0.5 bg-primary" />}
                 </Link>
               ),
@@ -105,21 +136,24 @@ export function Header() {
           </nav>
 
           <div className={`flex shrink-0 items-center gap-1 sm:gap-2 ${tone}`}>
+            <div className="hidden sm:block">
+              <LanguageSwitch overHero={overHero} />
+            </div>
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              aria-label="Ürün ara"
+              aria-label={t.common.searchProducts}
               className="inline-flex size-11 items-center justify-center rounded-full transition-colors hover:bg-current/10"
             >
               <Search className="size-5" aria-hidden />
             </button>
             <Link
               href="/teklif-listem"
-              aria-label={`Teklif Listem, ${count} ürün`}
+              aria-label={t.common.quoteListAria(count)}
               className="relative inline-flex min-h-11 items-center gap-2 rounded-full px-2.5 transition-colors hover:bg-current/10"
             >
               <ClipboardList className="size-5" aria-hidden />
-              <span className="hidden text-[13px] font-semibold xl:inline">Teklif Listem</span>
+              <span className="hidden text-[13px] font-semibold min-[1500px]:inline">{t.common.quoteList}</span>
               <span
                 className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] leading-5 font-bold ${
                   count > 0 ? "bg-primary text-white" : overHero ? "bg-white/20 text-white" : "bg-line text-charcoal"
@@ -129,12 +163,12 @@ export function Header() {
               </span>
             </Link>
             <Link href="/teklif-listem#teklif-formu" className="btn-primary ml-1 hidden min-h-11 px-5 sm:inline-flex">
-              Teklif Talebi
+              {t.common.quoteRequest}
             </Link>
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Menüyü kapat" : "Menüyü aç"}
+              aria-label={menuOpen ? t.common.closeMenu : t.common.openMenu}
               aria-expanded={menuOpen}
               aria-controls="mobil-menu"
               className="inline-flex size-11 items-center justify-center nav:hidden"
@@ -152,7 +186,7 @@ export function Header() {
         hidden={!menuOpen}
         className="fixed inset-x-0 top-[72px] bottom-0 z-[49] overflow-y-auto border-t border-line bg-white nav:hidden lg:top-[84px]"
       >
-        <nav aria-label="Mobil menü" className="container-site flex min-h-full flex-col py-4">
+        <nav aria-label={t.common.mobileMenu} className="container-site flex min-h-full flex-col py-4">
           <ul className="divide-y divide-line">
             {mainNav.map((item) => (
               <li key={item.href}>
@@ -164,20 +198,20 @@ export function Header() {
                       aria-expanded={openSub === item.href}
                       className="flex min-h-14 w-full items-center justify-between text-left text-[17px] font-semibold text-ink"
                     >
-                      {item.label}
+                      {t.nav[item.key]}
                       <ChevronDown className={`size-5 transition-transform ${openSub === item.href ? "rotate-180" : ""}`} aria-hidden />
                     </button>
                     {openSub === item.href && (
                       <ul className="mb-3 border-l-2 border-primary pl-4">
                         <li>
                           <Link href={item.href} className="flex min-h-11 items-center text-[15px] text-muted">
-                            Genel bakış
+                            {t.common.overview}
                           </Link>
                         </li>
                         {item.children.map((c) => (
                           <li key={c.href}>
                             <Link href={c.href} className="flex min-h-11 items-center text-[15px] text-charcoal">
-                              {c.label}
+                              {t.nav[c.key]}
                             </Link>
                           </li>
                         ))}
@@ -191,18 +225,21 @@ export function Header() {
                       isActive(pathname, item.href) ? "text-primary" : "text-ink"
                     }`}
                   >
-                    {item.label}
+                    {t.nav[item.key]}
                   </Link>
                 )}
               </li>
             ))}
           </ul>
           <div className="mt-auto grid gap-3 pt-8 pb-4">
+            <div className="sm:hidden">
+              <LanguageSwitch />
+            </div>
             <Link href="/teklif-listem#teklif-formu" className="btn-primary w-full">
-              Teklif Talebi Oluşturun
+              {t.common.createQuoteRequest}
             </Link>
             <Link href="/teklif-listem" className="btn-outline w-full">
-              Teklif Listem ({count})
+              {t.common.quoteList} ({count})
             </Link>
           </div>
         </nav>

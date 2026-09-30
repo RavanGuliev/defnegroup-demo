@@ -8,7 +8,8 @@ import { createContext, useCallback, useContext, useMemo, useSyncExternalStore }
  * göndəriş backend mərhələsində API-yə bağlanacaq.
  */
 
-export type QuoteItem = { slug: string; qty: number; note: string };
+export const quoteUnits = ["Adet", "Paket", "Koli", "Set", "Çift", "Metre", "m²", "Kg", "Litre"] as const;
+export type QuoteItem = { slug: string; qty: number; unit?: string; note: string };
 
 const KEY = "defne-teklif-listem";
 const EMPTY: QuoteItem[] = [];
@@ -68,7 +69,7 @@ export function QuoteProvider({ children }: { children: React.ReactNode }) {
     write(
       prev.some((i) => i.slug === slug)
         ? prev.map((i) => (i.slug === slug ? { ...i, qty: i.qty + qty } : i))
-        : [...prev, { slug, qty, note: "" }],
+        : [...prev, { slug, qty, unit: "Adet", note: "" }],
     );
   }, []);
   const remove = useCallback((slug: string) => write(read().filter((i) => i.slug !== slug)), []);
