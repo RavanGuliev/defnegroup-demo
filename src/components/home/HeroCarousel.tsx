@@ -25,7 +25,8 @@ const slides: Slide[] = [
   { groupCodes: ["04", "10", "06"] },
 ];
 
-const DURATION = 7000;
+// Slaydlar yavaş dəyişir; siçan üzərində / fokusda dayanır, istifadəçi tam dayandıra bilir
+const DURATION = 9000;
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
 function subscribeMotion(cb: () => void) {
@@ -39,15 +40,18 @@ export function HeroCarousel() {
   const [userPaused, setUserPaused] = useState<boolean | null>(null);
   const reducedMotion = useSyncExternalStore(subscribeMotion, () => window.matchMedia(REDUCED).matches, () => false);
   // İstifadəçi seçimi yoxdursa, "azaldılmış hərəkət" parametrinə uyğun avtomatik dayanır
+  // Siçan üzərində və ya klaviatura fokusu içəridə olduqda müvəqqəti dayanır
+  const [hovering, setHovering] = useState(false);
   const paused = userPaused ?? reducedMotion;
+  const running = !paused && !hovering;
   const setPaused = (fn: (p: boolean) => boolean) => setUserPaused(fn(paused));
   const go = useCallback((dir: number) => setActive((i) => (i + dir + slides.length) % slides.length), []);
 
   useEffect(() => {
-    if (paused) return;
+    if (!running) return;
     const t = setTimeout(() => go(1), DURATION);
     return () => clearTimeout(t);
-  }, [active, paused, go]);
+  }, [active, running, go]);
 
   const slide = slides[active];
   const lang = useLang();
@@ -60,6 +64,10 @@ export function HeroCarousel() {
     <section
       aria-roledescription="carousel"
       aria-label={t.aria}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      onFocus={() => setHovering(true)}
+      onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setHovering(false)}
       className="relative isolate -mt-[72px] w-full overflow-hidden bg-night lg:-mt-[84px]"
     >
       {slides.map((s, i) => (
@@ -168,7 +176,7 @@ export function HeroCarousel() {
         {t.slide} {active + 1}. {label}
       </span>
       <div className="absolute inset-x-0 bottom-0 z-20 h-[2px] bg-white/15" aria-hidden>
-        {!paused && <div key={active} className="hero-progress-fill h-full bg-primary" style={{ animationDuration: `${DURATION}ms` }} />}
+        {running && <div key={active} className="hero-progress-fill h-full bg-primary" style={{ animationDuration: `${DURATION}ms` }} />}
       </div>
     </section>
   );

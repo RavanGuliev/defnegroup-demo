@@ -1,7 +1,7 @@
 import { getDict } from "@/i18n/dictionaries";
 import { getLang } from "@/i18n/server";
 import { db, groupHref } from "@/lib/data";
-import { mainNav, site } from "@/lib/site";
+import { mainNav, navVisible, site } from "@/lib/site";
 import Link from "./Link";
 import { Logo } from "./Logo";
 
@@ -30,7 +30,7 @@ export async function Footer() {
           <div>
             <p className={colTitle}>{t.common.quickMenu}</p>
             <ul className="mt-5 space-y-1">
-              {mainNav.slice(1).map((i) => (
+              {mainNav.flatMap((i) => i.children ?? [i]).filter(navVisible).map((i) => (
                 <li key={i.href}>
                   <Link className={linkCls} href={i.href}>
                     {t.nav[i.key]}

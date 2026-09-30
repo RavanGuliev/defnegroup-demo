@@ -1,16 +1,23 @@
 import { getDict } from "@/i18n/dictionaries";
 import { getLang } from "@/i18n/server";
-import { mainNav } from "@/lib/site";
+import { certificates } from "@/lib/data";
+import { isFinal } from "@/lib/site";
 import Link from "./Link";
 
-const items = mainNav.find((i) => i.href === "/kurumsal")?.children ?? [];
+/* Kurumsal səhifələri arasında tab keçidi (üst menyudan asılı deyil) */
+const items = [
+  { key: "about", href: "/kurumsal/hakkimizda" },
+  { key: "mission", href: "/kurumsal/misyon-ve-vizyon" },
+  { key: "why", href: "/kurumsal/neden-defne-group" },
+  { key: "certificates", href: "/kurumsal/belgeler-ve-sertifikalar" },
+] as const;
 
 export async function KurumsalNav({ active }: { active: string }) {
   const t = getDict(await getLang()).nav;
   return (
     <nav aria-label={t.corporate} className="sticky top-[72px] z-30 border-b border-line bg-white/95 backdrop-blur lg:top-[84px]">
       <ul className="container-site flex gap-6 overflow-x-auto [scrollbar-width:none] sm:gap-8">
-        {items.map((i) => (
+        {items.filter((i) => !(isFinal && i.key === "certificates" && !certificates.length)).map((i) => (
           <li key={i.href} className="shrink-0">
             <Link
               href={i.href}

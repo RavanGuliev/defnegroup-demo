@@ -8,6 +8,7 @@
  */
 
 import type { Locale } from "../i18n/config";
+import { isFinal } from "./flags";
 import {
   azCatalogs,
   azCatalogTypes,
@@ -764,6 +765,16 @@ export const allProducts: Product[] = [
   },
 ];
 
+/*
+ * Layihələr və sənədlər — yalnız real, dərc icazəsi alınmış və təsdiqlənmiş olduqda əlavə olunur
+ * (müştəri adı yalnız yazılı icazə ilə). Boş olduqda son yayında menyu keçidləri gizlədilir.
+ */
+export type Project = { slug: string; title: string; sectorSlug?: string; solutionSlug?: string; year?: number; summary?: string; images?: string[] };
+export const projects: Project[] = [];
+
+export type Certificate = { slug: string; name: string; type: string; validUntil?: string; file: string };
+export const certificates: Certificate[] = [];
+
 export type Catalog = {
   slug: string;
   name: string;
@@ -809,8 +820,8 @@ export const catalogs: Catalog[] = [
 
 /* ---------- yardımcılar ---------- */
 
-/** Saytda göstərilən məhsullar (təsdiqsiz qeydlər çıxarılır). */
-export const products = allProducts.filter((p) => p.published !== false);
+/** Saytda göstərilən məhsullar: təsdiqsiz qeydlər çıxarılır; son yayında nümunə (demo) məhsullar da gizlədilir. */
+export const products = allProducts.filter((p) => p.published !== false && !(isFinal && p.sample));
 
 export const getGroup = (slug: string) => groups.find((g) => g.slug === slug);
 export const getGroupByCode = (code: string) => groups.find((g) => g.code === code);

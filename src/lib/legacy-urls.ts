@@ -3,7 +3,7 @@
  * 12 qruplu demo quruluşundakı ünvanlar qırıq keçidə çevrilmir; 17/107 quruluşundakı
  * uyğun səhifəyə daimi yönləndirilir. next.config.ts bu siyahıdan redirect yaradır.
  */
-import { allProducts, getGroupByCode, getSub, groupHref, productHref, subHref } from "./data";
+import { allProducts, getGroupByCode, getSub, groupHref, productHref, products, subHref } from "./data";
 
 /** Köhnə kateqoriya slug → yeni qrup və ya alt bölmə kodu. */
 const legacyCategories: Record<string, string> = {
@@ -49,8 +49,9 @@ export function legacyUrlMap(): { source: string; destination: string }[] {
   const cats = Object.entries(legacyCategories).map(([slug, code]) => ({ source: `/urunler/${slug}`, destination: codeHref(code) }));
   const prods = allProducts.map((p) => ({
     source: `/urunler/${legacyProductCategory[p.slug]}/${p.slug}`,
-    // Təsdiqsiz (yayımlanmayan) məhsul öz qrup səhifəsinə yönləndirilir
-    destination: p.published === false ? codeHref(p.groupCode!) : productHref(p),
+    // Təsdiqsiz (yayımlanmayan) məhsul öz qrup səhifəsinə, son yayında gizlədilən nümunə məhsul
+    // isə alt kateqoriya səhifəsinə yönləndirilir — köhnə keçid qırılmır
+    destination: p.published === false ? codeHref(p.groupCode!) : products.includes(p) ? productHref(p) : codeHref(p.subCode),
   }));
   // Dilsiz köhnə ünvan → /tr/... (sayt əvvəl yalnız türkcə idi); dilli köhnə ünvan → eyni dildə yeni ünvan
   return [...cats, ...prods].flatMap((r) => [

@@ -6,7 +6,7 @@ import { ChevronDown, ClipboardList, Menu, Search, X } from "lucide-react";
 import { localeLabels, locales, stripLocale } from "@/i18n/config";
 import { useLang } from "@/i18n/client";
 import { getDict } from "@/i18n/dictionaries";
-import { mainNav } from "@/lib/site";
+import { homeNav, mainNav, navVisible, type NavItem } from "@/lib/site";
 import Link from "./Link";
 import { Logo } from "./Logo";
 import { useQuote } from "./QuoteProvider";
@@ -77,6 +77,8 @@ export function Header() {
   }, [menuOpen]);
 
   const tone = overHero ? "text-white" : "text-ink";
+  const itemActive = (item: NavItem) => isActive(pathname, item.href) || !!item.children?.some((c) => isActive(pathname, c.href));
+  const subItems = (item: NavItem) => item.children?.filter(navVisible) ?? [];
 
   return (
     <>
@@ -88,28 +90,28 @@ export function Header() {
         <div className="container-site flex h-[72px] items-center justify-between gap-4 lg:h-[84px]">
           <Logo tone={overHero ? "light" : "dark"} className={`nav:shrink-0 ${overHero ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]" : ""}`} />
 
-          <nav aria-label={t.common.mainMenu} className={`hidden items-center gap-[clamp(12px,1.2vw,26px)] nav:flex ${tone}`}>
+          <nav aria-label={t.common.mainMenu} className={`hidden items-center gap-[clamp(20px,2.2vw,36px)] nav:flex ${tone}`}>
             {mainNav.map((item) =>
               item.children ? (
                 <div key={item.href} className="group relative">
                   <Link
                     href={item.href}
                     aria-haspopup="true"
-                    className={`relative inline-flex items-center gap-1 py-2 text-[14px] font-medium tracking-wide transition-colors ${
+                    className={`relative inline-flex items-center gap-1 py-2 text-[15px] font-medium whitespace-nowrap transition-colors ${
                       overHero ? "text-white/85 hover:text-white" : "text-charcoal hover:text-primary"
                     }`}
                   >
                     {t.nav[item.key]}
                     <ChevronDown className="size-3.5 transition-transform group-focus-within:rotate-180 group-hover:rotate-180" aria-hidden />
-                    {isActive(pathname, item.href) && <span className="absolute inset-x-0 bottom-0.5 h-0.5 bg-primary" />}
+                    {itemActive(item) && <span className="absolute inset-x-0 bottom-0.5 h-0.5 bg-primary" />}
                   </Link>
                   <div className="invisible absolute top-full left-1/2 w-64 -translate-x-1/2 pt-3 opacity-0 transition-all duration-200 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
                     <ul className="rounded-[8px] border border-line bg-white p-2 text-ink shadow-[0_18px_40px_-20px_rgba(16,36,63,0.35)]">
-                      {item.children.map((c) => (
+                      {subItems(item).map((c) => (
                         <li key={c.href}>
                           <Link
                             href={c.href}
-                            className={`flex min-h-11 items-center rounded-[6px] px-3 text-[14px] font-medium transition-colors hover:bg-light hover:text-primary ${
+                            className={`flex min-h-11 items-center rounded-[6px] px-3 text-[15px] font-medium transition-colors hover:bg-light hover:text-primary ${
                               pathname === c.href ? "text-primary" : ""
                             }`}
                           >
@@ -124,7 +126,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative inline-flex items-center py-2 text-[14px] font-medium tracking-wide whitespace-nowrap transition-colors ${
+                  className={`relative inline-flex items-center py-2 text-[15px] font-medium whitespace-nowrap transition-colors ${
                     overHero ? "text-white/85 hover:text-white" : "text-charcoal hover:text-primary"
                   }`}
                 >
@@ -163,7 +165,7 @@ export function Header() {
               </span>
             </Link>
             <Link href="/teklif-listem#teklif-formu" className="btn-primary ml-1 hidden min-h-11 px-5 sm:inline-flex">
-              {t.common.quoteRequest}
+              {t.common.getQuote}
             </Link>
             <button
               type="button"
@@ -188,7 +190,7 @@ export function Header() {
       >
         <nav aria-label={t.common.mobileMenu} className="container-site flex min-h-full flex-col py-4">
           <ul className="divide-y divide-line">
-            {mainNav.map((item) => (
+            {[homeNav, ...mainNav].map((item) => (
               <li key={item.href}>
                 {item.children ? (
                   <>
@@ -203,12 +205,14 @@ export function Header() {
                     </button>
                     {openSub === item.href && (
                       <ul className="mb-3 border-l-2 border-primary pl-4">
-                        <li>
-                          <Link href={item.href} className="flex min-h-11 items-center text-[15px] text-muted">
-                            {t.common.overview}
-                          </Link>
-                        </li>
-                        {item.children.map((c) => (
+                        {!item.children.some((c) => c.href === item.href) && (
+                          <li>
+                            <Link href={item.href} className="flex min-h-11 items-center text-[15px] text-muted">
+                              {t.common.overview}
+                            </Link>
+                          </li>
+                        )}
+                        {subItems(item).map((c) => (
                           <li key={c.href}>
                             <Link href={c.href} className="flex min-h-11 items-center text-[15px] text-charcoal">
                               {t.nav[c.key]}

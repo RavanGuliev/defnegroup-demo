@@ -3,6 +3,7 @@ import Link from "@/components/Link";
 import { EmptyState, PageHero } from "@/components/ui";
 import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
+import { certificates } from "@/lib/data";
 
 const copy = {
   tr: {
@@ -29,11 +30,9 @@ export async function generateMetadata() {
 
 /*
  * ISO 9001, ISO 14001, yetkinlik və uyğunluq sənədləri YALNIZ real və təsdiqlənmiş olduqda
- * göstəriləcək (sənəd, bölmə 7). Sənədlər gəldikdə bu siyahı `catalogs` quruluşuna oxşar
- * kartlarla doldurulacaq: ön baxış, ad, sənəd növü, etibarlılıq tarixi, İncele / İndir.
+ * göstəriləcək (data.ts → certificates). Sənədlər gəldikdə kataloq kartlarına oxşar kartlarla
+ * doldurulacaq: ön baxış, ad, sənəd növü, etibarlılıq tarixi, İncele / İndir.
  */
-const documents: { name: string }[] = [];
-
 export default async function CertificatesPage() {
   const lang = await getLang();
   const t = copy[lang];
@@ -50,7 +49,7 @@ export default async function CertificatesPage() {
       <KurumsalNav active="/kurumsal/belgeler-ve-sertifikalar" />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         <div className="container-site">
-          {documents.length === 0 && (
+          {certificates.length === 0 && (
             <EmptyState
               title={t.emptyTitle}
               text={t.emptyText}

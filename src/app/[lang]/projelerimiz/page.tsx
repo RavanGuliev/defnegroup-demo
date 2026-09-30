@@ -2,6 +2,7 @@ import Link from "@/components/Link";
 import { EmptyState, FinalCta, PageHero } from "@/components/ui";
 import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
+import { projects } from "@/lib/data";
 
 const copy = {
   tr: {
@@ -26,13 +27,6 @@ export async function generateMetadata() {
   const lang = await getLang();
   return pageMeta("/projelerimiz", { title: getDict(lang).nav.projects, description: copy[lang].description });
 }
-
-/*
- * Yalnız həqiqətən görülmüş və yayımlanmasına icazə verilmiş layihələr yerləşdiriləcək;
- * müştəri / qurum adı yalnız yazılı icazə ilə (sənəd, bölmə 7).
- * Layihə modeli: { slug, title, sectorSlug, solutionSlug, year, summary, images[], clientName? (icazə ilə) }
- */
-const projects: { slug: string; title: string }[] = [];
 
 export default async function ProjectsPage() {
   const lang = await getLang();

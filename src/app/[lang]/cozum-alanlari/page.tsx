@@ -41,9 +41,9 @@ export default async function SolutionsPage() {
             <Reveal key={s.slug} delay={(i % 2) * 80}>
               <Link
                 href={`/cozum-alanlari/${s.slug}`}
-                className="group grid h-full overflow-hidden rounded-[8px] border border-line bg-white transition-shadow hover:shadow-[0_18px_40px_-28px_rgba(16,36,63,0.5)] sm:grid-cols-[200px_minmax(0,1fr)]"
+                className="group grid h-full overflow-hidden rounded-[8px] border border-line bg-white transition-shadow hover:shadow-[0_18px_40px_-28px_rgba(16,36,63,0.5)] lg:grid-cols-[200px_minmax(0,1fr)]"
               >
-                <div className="relative aspect-[16/9] bg-night sm:aspect-auto">
+                <div className="relative aspect-[16/9] bg-night lg:aspect-auto">
                   <Media alt={s.name} icon={s.icon} iconClassName="size-16" />
                   <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" aria-hidden />
                 </div>

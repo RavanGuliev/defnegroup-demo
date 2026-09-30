@@ -5,6 +5,8 @@ import type { Locale } from "@/i18n/config";
 import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
 import { db } from "@/lib/data";
+import { EmptyState } from "@/components/ui";
+import { isFinal } from "@/lib/site";
 
 const copy = {
   tr: {
@@ -13,6 +15,8 @@ const copy = {
     text: "Ürün kataloglarımızı ve teknik dokümanlarımızı inceleyin veya indirin.",
     updated: "Güncelleme",
     soon: "Dosya yakında eklenecek",
+    emptyTitle: "Kataloglar hazırlanıyor",
+    emptyText: "Onaylı katalog ve teknik dokümanlarımız yakında bu sayfada yayımlanacaktır. İhtiyacınız olan doküman için bizimle iletişime geçebilirsiniz.",
   },
   az: {
     description: "DEFNE GROUP məhsul kataloqları, texniki sənədlər və korporativ təqdimat faylları.",
@@ -20,6 +24,8 @@ const copy = {
     text: "Məhsul kataloqlarımıza və texniki sənədlərimizə baxın və ya yükləyin.",
     updated: "Yenilənmə",
     soon: "Fayl tezliklə əlavə ediləcək",
+    emptyTitle: "Kataloqlar hazırlanır",
+    emptyText: "Təsdiqlənmiş kataloq və texniki sənədlərimiz tezliklə bu səhifədə dərc olunacaq. Ehtiyacınız olan sənəd üçün bizimlə əlaqə saxlaya bilərsiniz.",
   },
 };
 
@@ -37,7 +43,10 @@ export default async function CatalogsPage() {
   const lang = await getLang();
   const t = copy[lang];
   const d = getDict(lang);
-  const { catalogs, getGroupByCode } = db(lang);
+  const data = db(lang);
+  // Son yayında faylı olmayan (pasiv düyməli) kartlar gizlədilir
+  const catalogs = isFinal ? data.catalogs.filter((c) => !!c.file) : data.catalogs;
+  const { getGroupByCode } = data;
   return (
     <>
       <PageHero
@@ -48,6 +57,11 @@ export default async function CatalogsPage() {
         icon="clipboard"
       />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
+        {catalogs.length === 0 && (
+          <div className="container-site">
+            <EmptyState title={t.emptyTitle} text={t.emptyText} />
+          </div>
+        )}
         <ul className="container-site grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {catalogs.map((c, i) => {
             const cat = c.groupCode ? getGroupByCode(c.groupCode) : undefined;

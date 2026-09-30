@@ -9,7 +9,7 @@
  */
 @theme {
   /* Tam masaüstü menyunun göründüyü nöqtə (8 menyu + düymələr) */
-  --breakpoint-nav: 90rem;
+  --breakpoint-nav: 73.75rem;
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 

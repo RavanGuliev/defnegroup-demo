@@ -1,8 +1,9 @@
-/*
- * Sınaq mühiti noindex-dir (düzəliş tapşırığı, bölmə 7). Şəkil hüquqları, təchizatçı/model
- * və DEFNE təsdiqi tamamlandıqdan sonra canlı mühitdə SITE_INDEXABLE=true təyin edilir.
- */
-export const indexable = process.env.SITE_INDEXABLE === "true";
+import { certificates, projects } from "./data";
+import { isFinal } from "./flags";
+
+export { isFinal };
+/** Sınaq mühiti noindex-dir; yalnız son yayında indeksləmə açılır. */
+export const indexable = isFinal;
 
 export const site = {
   name: "DEFNE GROUP",
@@ -20,26 +21,54 @@ export const site = {
   },
 };
 
-export type NavKey = "home" | "corporate" | "about" | "mission" | "why" | "certificates" | "solutions" | "sectors" | "productGroups" | "projects" | "catalogs" | "contact";
+export type NavKey =
+  | "home"
+  | "productGroups"
+  | "solutionsMenu"
+  | "solutionAreas"
+  | "servedSectors"
+  | "corporate"
+  | "about"
+  | "projects"
+  | "certificates"
+  | "catalogs"
+  | "contact";
 /** Menyu elementləri — başlıqlar lüğətdən (`dict.nav[key]`) götürülür. */
 export type NavItem = { key: NavKey; href: string; children?: NavItem[] };
 
+/*
+ * Üst menyu (Kalan İşler, bölmə 1): Logo → Ürün Grupları → Çözümler → Kurumsal → Kataloglar → İletişim.
+ * Ana Sayfa masaüstü menyusunda yoxdur (loqo ana səhifəni açır); mobil menyuda saxlanılır.
+ */
 export const mainNav: NavItem[] = [
-  { key: "home", href: "/" },
+  { key: "productGroups", href: "/urunler" },
+  {
+    key: "solutionsMenu",
+    href: "/cozum-alanlari",
+    children: [
+      { key: "solutionAreas", href: "/cozum-alanlari" },
+      { key: "servedSectors", href: "/sektorler" },
+    ],
+  },
   {
     key: "corporate",
     href: "/kurumsal",
     children: [
       { key: "about", href: "/kurumsal/hakkimizda" },
-      { key: "mission", href: "/kurumsal/misyon-ve-vizyon" },
-      { key: "why", href: "/kurumsal/neden-defne-group" },
+      { key: "projects", href: "/projelerimiz" },
       { key: "certificates", href: "/kurumsal/belgeler-ve-sertifikalar" },
     ],
   },
-  { key: "solutions", href: "/cozum-alanlari" },
-  { key: "sectors", href: "/sektorler" },
-  { key: "productGroups", href: "/urunler" },
-  { key: "projects", href: "/projelerimiz" },
   { key: "catalogs", href: "/kataloglar" },
   { key: "contact", href: "/iletisim" },
 ];
+
+export const homeNav: NavItem = { key: "home", href: "/" };
+
+/** Son yayında məzmunu olmayan səhifələrin menyu keçidi gizlədilir. */
+export function navVisible(item: NavItem) {
+  if (!isFinal) return true;
+  if (item.key === "projects") return projects.length > 0;
+  if (item.key === "certificates") return certificates.length > 0;
+  return true;
+}

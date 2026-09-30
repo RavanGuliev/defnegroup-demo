@@ -15,7 +15,7 @@ export function Logo({ tone = "dark", className = "" }: { tone?: "dark" | "light
   const sub = tone === "light" ? "text-white/60" : "text-muted";
   const t = getDict(useLang()).common;
   return (
-    <Link href="/" aria-label={t.logoAria} className={`inline-flex min-w-0 flex-col leading-none ${className}`}>
+    <Link href="/" aria-label={t.logoAria} className={`inline-flex min-h-11 min-w-0 flex-col justify-center leading-none ${className}`}>
       <span className={`text-[22px] font-extrabold tracking-[-0.03em] sm:text-[24px] ${main}`}>
         DEFNE<span className="text-primary"> </span>
         <span className={tone === "light" ? "text-white" : "text-primary"}>GROUP</span>

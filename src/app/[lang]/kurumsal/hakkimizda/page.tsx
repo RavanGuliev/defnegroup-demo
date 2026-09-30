@@ -84,7 +84,7 @@ export default async function AboutPage() {
         <div className="container-site">
           <p className="type-kicker">02 — {t.valuesKicker}</p>
           <h2 className="type-h2 mt-4 text-ink">{t.valuesTitle}</h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:gap-5 xl:grid-cols-4">
             {t.values.map((v, i) => (
               <Reveal key={v.title} delay={i * 60} className="rounded-[8px] border border-line bg-white p-6 sm:p-7">
                 <p className="type-small text-primary">{pad2(i + 1)}</p>
