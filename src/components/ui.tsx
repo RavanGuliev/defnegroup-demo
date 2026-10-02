@@ -1,11 +1,10 @@
-import { getDict } from "@/i18n/dictionaries";
-import { getLang } from "@/i18n/server";
 import Link from "./Link";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import type { IconName } from "@/lib/data";
 import { Icon } from "./Icon";
 import { Media } from "./Media";
 import { Reveal } from "./Reveal";
+import { getDictionary } from "@/lib/cms";
 
 /* Bölmə başlığı: “01 — Kicker” + H2 + açıqlama + sağda keçid (referans saytdakı ritm) */
 export function SectionHeading({
@@ -54,7 +53,7 @@ export function CtaLink({ href, children, className = "" }: { href: string; chil
 export type Crumb = { label: string; href?: string };
 
 export async function Breadcrumbs({ items, light }: { items: Crumb[]; light?: boolean }) {
-  const t = getDict(await getLang());
+  const t = (await getDictionary());
   const all: Crumb[] = [{ label: t.nav.home, href: "/" }, ...items];
   return (
     <nav aria-label={t.common.breadcrumbAria}>
@@ -123,7 +122,7 @@ export function PageHero({
 
 /* Son çağırış (sənəd, bölmə 5) */
 export async function FinalCta() {
-  const t = getDict(await getLang()).cta;
+  const t = (await getDictionary()).cta;
   return (
     <section className="relative isolate overflow-hidden bg-primary text-white">
       <div className="leaf-motif absolute inset-0 -z-10" aria-hidden />

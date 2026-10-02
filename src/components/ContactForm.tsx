@@ -1,16 +1,18 @@
 "use client";
 
+import { useDict } from "@/components/SiteData";
 import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
+import { submitContact } from "@/lib/api";
 import Link from "./Link";
 
 // Backend mərhələsində API-yə bağlanacaq.
 export function ContactForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
-  const d = getDict(useLang());
+  const lang = useLang();
+  const d = useDict();
   const q = d.quote;
   const t = d.contactForm;
 
@@ -29,7 +31,14 @@ export function ContactForm() {
       return;
     }
     setStatus("sending");
-    await new Promise((r) => setTimeout(r, 800));
+    const form = ev.currentTarget;
+    const res = await submitContact(lang, fd);
+    if (!res.ok) {
+      setStatus("idle");
+      setErrors(res.network ? { form: q.networkError } : res.errors);
+      if (!res.network) (form.elements.namedItem(Object.keys(res.errors)[0]) as HTMLElement | null)?.focus();
+      return;
+    }
     setStatus("done");
   }
 
@@ -109,6 +118,11 @@ export function ContactForm() {
         </label>
         {err("kvkk")}
       </div>
+      {errors.form && (
+        <p role="alert" className="rounded-[6px] border border-red-200 bg-red-50 px-4 py-3 text-[14px] font-medium text-red-800 sm:col-span-2">
+          {errors.form}
+        </p>
+      )}
       <div className="sm:col-span-2">
         <button type="submit" disabled={status === "sending"} className="btn-primary min-h-[52px] w-full px-8 sm:w-auto">
           {status === "sending" ? q.sending : t.submit}

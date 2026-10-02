@@ -1,12 +1,12 @@
 import { Download, Eye, FileText } from "lucide-react";
+import { Media } from "@/components/Media";
 import { Reveal } from "@/components/Reveal";
 import { FinalCta, PageHero } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db } from "@/lib/data";
 import { EmptyState } from "@/components/ui";
 import { isFinal } from "@/lib/site";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -18,32 +18,32 @@ const copy = {
     emptyTitle: "Kataloglar hazırlanıyor",
     emptyText: "Onaylı katalog ve teknik dokümanlarımız yakında bu sayfada yayımlanacaktır. İhtiyacınız olan doküman için bizimle iletişime geçebilirsiniz.",
   },
-  az: {
-    description: "DEFNE GROUP məhsul kataloqları, texniki sənədlər və korporativ təqdimat faylları.",
-    title: "Kataloqlar və sənədlər",
-    text: "Məhsul kataloqlarımıza və texniki sənədlərimizə baxın və ya yükləyin.",
-    updated: "Yenilənmə",
-    soon: "Fayl tezliklə əlavə ediləcək",
-    emptyTitle: "Kataloqlar hazırlanır",
-    emptyText: "Təsdiqlənmiş kataloq və texniki sənədlərimiz tezliklə bu səhifədə dərc olunacaq. Ehtiyacınız olan sənəd üçün bizimlə əlaqə saxlaya bilərsiniz.",
+  en: {
+    description: "DEFNE GROUP product catalogues, technical documents and corporate presentation files.",
+    title: "Catalogues and documents",
+    text: "View or download our product catalogues and technical documents.",
+    updated: "Updated",
+    soon: "File will be added soon",
+    emptyTitle: "Catalogues are being prepared",
+    emptyText: "Our approved catalogues and technical documents will be published on this page soon. Contact us for any document you need.",
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/kataloglar", { title: getDict(lang).nav.catalogs, description: copy[lang].description });
+  return pageMeta("/kataloglar", { title: (await getDictionary(lang)).nav.catalogs, description: (await pageCopy("pages.kataloglar", copy, lang)).description });
 }
 
 function formatDate(ym: string, lang: Locale) {
   const [y, m] = ym.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString(lang === "az" ? "az-AZ" : "tr-TR", { month: "long", year: "numeric" });
+  return new Date(y, m - 1, 1).toLocaleDateString(lang === "en" ? "en-GB" : "tr-TR", { month: "long", year: "numeric" });
 }
 
 export default async function CatalogsPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
-  const data = db(lang);
+  const t = (await pageCopy("pages.kataloglar", copy, lang));
+  const d = (await getDictionary(lang));
+  const data = (await getDb(lang));
   // Son yayında faylı olmayan (pasiv düyməli) kartlar gizlədilir
   const catalogs = isFinal ? data.catalogs.filter((c) => !!c.file) : data.catalogs;
   const { getGroupByCode } = data;
@@ -55,6 +55,7 @@ export default async function CatalogsPage() {
         text={t.text}
         crumbs={[{ label: d.nav.catalogs }]}
         icon="clipboard"
+        image={(await getDb(lang)).images.kataloglar ?? undefined}
       />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         {catalogs.length === 0 && (
@@ -71,7 +72,9 @@ export default async function CatalogsPage() {
                 <article className="flex h-full flex-col overflow-hidden rounded-[8px] border border-line bg-white">
                   {/* Üz qabığı / ön baxış */}
                   <div className="relative aspect-[3/4] overflow-hidden bg-light p-6">
-                    <div className="leaf-motif absolute inset-4 flex flex-col justify-between rounded-[4px] bg-navy p-5 text-white shadow-[0_18px_40px_-20px_rgba(16,36,63,0.6)]">
+                    {/* Paneldən yüklənmiş üz qabığı varsa o göstərilir */}
+                    {c.cover && <Media src={c.cover} alt={c.name} variant="light" sizes="300px" />}
+                    <div className="leaf-motif absolute inset-4 [.relative:has(img)>&]:hidden flex flex-col justify-between rounded-[4px] bg-navy p-5 text-white shadow-[0_18px_40px_-20px_rgba(16,36,63,0.6)]">
                       <span className="text-[11px] font-extrabold tracking-[0.2em]">DEFNE GROUP</span>
                       <div>
                         <span className="block h-0.5 w-8 bg-primary" />

@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 import { locales } from "@/i18n/config";
-import { allProductsHref, groupHref, groups, productHref, products, sectors, solutions, subcategories, subHref } from "@/lib/data";
+import { getDb } from "@/lib/cms";
+import { allProductsHref, groupHref, productHref, subHref } from "@/lib/data";
 import { site } from "@/lib/site";
 
-/* Hər səhifə hər iki dildə yer alır; hreflang alternativləri ilə */
-export default function sitemap(): MetadataRoute.Sitemap {
+/* Hər səhifə hər iki dildə; siyahı paneldəki (API) məzmundan qurulur */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const db = await getDb("tr");
   const staticPaths = [
     "",
     "/kurumsal",
@@ -22,12 +24,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
   const paths = [
     ...staticPaths,
-    ...groups.map(groupHref),
+    ...db.groups.map(groupHref),
     // Hazırlıq statusundakı alt bölmələr indekslənmir
-    ...subcategories.filter((s) => !s.pending).map(subHref),
-    ...products.map(productHref),
-    ...solutions.map((s) => `/cozum-alanlari/${s.slug}`),
-    ...sectors.map((s) => `/sektorler/${s.slug}`),
+    ...db.subcategories.filter((s) => !s.pending).map(subHref),
+    ...db.products.filter((p) => p.subSlug).map(productHref),
+    ...db.solutions.map((s) => `/cozum-alanlari/${s.slug}`),
+    ...db.sectors.map((s) => `/sektorler/${s.slug}`),
   ];
   const now = new Date();
   return paths.flatMap((p) =>

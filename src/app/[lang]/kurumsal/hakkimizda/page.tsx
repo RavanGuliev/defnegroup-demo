@@ -3,9 +3,10 @@ import { KurumsalNav } from "@/components/KurumsalNav";
 import { Media } from "@/components/Media";
 import { Reveal } from "@/components/Reveal";
 import { FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db, pad2 } from "@/lib/data";
+import { pad2 } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
+import { RichText } from "@/components/RichText";
 
 // Şirkət mətni DEFNE GROUP tərəfindən təqdim ediləcək — aşağıdakılar yalnız quruluş üçündür.
 const copy = {
@@ -14,6 +15,7 @@ const copy = {
     heroText: "Kamu kurumları ve özel sektör için güvenilir tedarik ve proje çözümleri.",
     title: "Tedarik süreçlerini tek noktadan yönetiyoruz",
     p1: "DEFNE GROUP; belediyelerden sağlık kurumlarına, eğitim kampüslerinden sanayi tesislerine kadar farklı sektörlerin ürün ve proje ihtiyaçlarını karşılayan bir tedarik ve çözüm ortağıdır.",
+    body: "",
     p2: "İhtiyacın belirlenmesinden teknik çözüm seçimine, teklif ve onay sürecinden teslimata kadar her adımı aynı disiplinle yönetir; kurumlara tek muhatap üzerinden hızlı ve güvenilir hizmet sunarız.",
     valuesKicker: "İlkelerimiz",
     valuesTitle: "Çalışma prensiplerimiz",
@@ -26,35 +28,36 @@ const copy = {
     sectorsKicker: "Hizmet alanı",
     sectorsTitle: "Kamu ve özel sektörde geniş bir yelpazeye hizmet veriyoruz.",
   },
-  az: {
-    description: "DEFNE GROUP dövlət qurumları və özəl sektor üçün məhsul, həll və layihə təchizatı təqdim edir.",
-    heroText: "Dövlət qurumları və özəl sektor üçün etibarlı təchizat və layihə həlləri.",
-    title: "Təchizat proseslərini bir mərkəzdən idarə edirik",
-    p1: "DEFNE GROUP bələdiyyələrdən səhiyyə qurumlarına, təhsil kampuslarından sənaye obyektlərinə qədər müxtəlif sektorların məhsul və layihə ehtiyaclarını qarşılayan təchizat və həll tərəfdaşıdır.",
-    p2: "Ehtiyacın müəyyənləşdirilməsindən texniki həllin seçiminə, təklif və təsdiq prosesindən çatdırılmaya qədər hər addımı eyni intizamla idarə edir, qurumlara vahid əlaqə nöqtəsi üzərindən sürətli və etibarlı xidmət göstəririk.",
-    valuesKicker: "Prinsiplərimiz",
-    valuesTitle: "İş prinsiplərimiz",
+  en: {
+    description: "DEFNE GROUP provides product, solution and project supply for public institutions and the private sector.",
+    heroText: "Reliable supply and project solutions for public institutions and the private sector.",
+    title: "We manage supply processes from a single point",
+    p1: "DEFNE GROUP is a supply and solutions partner meeting the product and project needs of diverse sectors, from municipalities to healthcare institutions and from education campuses to industrial facilities.",
+    body: "",
+    p2: "We manage every step with the same discipline — from defining the need and selecting the technical solution to quotation, approval and delivery — and provide institutions with fast, reliable service through a single point of contact.",
+    valuesKicker: "Our Principles",
+    valuesTitle: "Our working principles",
     values: [
-      { title: "Etibarlılıq", text: "Öhdəlik götürdüyümüz məhsulu, tarixi və keyfiyyəti tam yerinə yetirmək." },
-      { title: "Şəffaflıq", text: "Təklif, təsdiq və çatdırılma proseslərini açıq və qeydiyyatla aparmaq." },
-      { title: "Həll yönümlülük", text: "Məhsulu deyil, qurumun real ehtiyacını mərkəzə qoymaq." },
-      { title: "Davamlılıq", text: "Uzunömürlü, qulluğu asan və məsuliyyətli mənbəli məhsullara üstünlük vermək." },
+      { title: "Reliability", text: "Delivering the product, date and quality we commit to in full." },
+      { title: "Transparency", text: "Running quotation, approval and delivery processes openly and with full records." },
+      { title: "Solution focus", text: "Putting the institution’s real need, not the product, at the centre." },
+      { title: "Sustainability", text: "Favouring long-lasting, easy-to-maintain and responsibly sourced products." },
     ],
-    sectorsKicker: "Xidmət sahəsi",
-    sectorsTitle: "Dövlət və özəl sektorda geniş spektrə xidmət göstəririk.",
+    sectorsKicker: "Scope of service",
+    sectorsTitle: "We serve a broad spectrum across the public and private sectors.",
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/kurumsal/hakkimizda", { title: getDict(lang).nav.about, description: copy[lang].description });
+  return pageMeta("/kurumsal/hakkimizda", { title: (await getDictionary(lang)).nav.about, description: (await pageCopy("pages.kurumsal.hakkimizda", copy, lang)).description });
 }
 
 export default async function AboutPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const nav = getDict(lang).nav;
-  const { sectors } = db(lang);
+  const t = (await pageCopy("pages.kurumsal.hakkimizda", copy, lang));
+  const nav = (await getDictionary(lang)).nav;
+  const { sectors } = (await getDb(lang));
   return (
     <>
       <PageHero
@@ -63,6 +66,7 @@ export default async function AboutPage() {
         text={t.heroText}
         crumbs={[{ label: nav.corporate, href: "/kurumsal" }, { label: nav.about }]}
         icon="building"
+        image={(await getDb(lang)).images.hakkimizda ?? undefined}
       />
       <KurumsalNav active="/kurumsal/hakkimizda" />
 
@@ -71,11 +75,17 @@ export default async function AboutPage() {
           <Reveal>
             <p className="type-kicker">01 — DEFNE GROUP</p>
             <h2 className="type-h2 mt-4 text-ink">{t.title}</h2>
-            <p className="type-body mt-5">{t.p1}</p>
-            <p className="type-body mt-4">{t.p2}</p>
+            {t.body ? (
+              <RichText html={t.body} className="mt-5" />
+            ) : (
+              <>
+                <p className="type-body mt-5">{t.p1}</p>
+                <p className="type-body mt-4">{t.p2}</p>
+              </>
+            )}
           </Reveal>
           <Reveal delay={100} className="relative aspect-[4/3] overflow-hidden rounded-[8px] bg-night">
-            <Media alt="DEFNE GROUP" icon="building" iconClassName="size-24" />
+            <Media src={(await getDb(lang)).images.hakkimizdaSection ?? undefined} alt="DEFNE GROUP" icon="building" iconClassName="size-24" />
           </Reveal>
         </div>
       </section>

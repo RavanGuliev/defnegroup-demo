@@ -5,9 +5,10 @@ import { GroupCard, ProductCard } from "@/components/cards";
 import { Icon } from "@/components/Icon";
 import Link from "@/components/Link";
 import { CtaLink, FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db, pad2, productGroupCode, solutions } from "@/lib/data";
+import { pad2, productGroupCode } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
+import { RichText } from "@/components/RichText";
 
 const copy = {
   tr: {
@@ -22,27 +23,27 @@ const copy = {
     allGroups: "Tüm ürün grupları",
     process: "Süreç",
   },
-  az: {
-    kicker: "Həll Sahəsi",
-    request: "Bu Həll üçün Təklif İstəyin",
-    need: "Ehtiyac",
-    needText: "Bu ehtiyacla müraciət edən qurumlar üçün prosesi təhlildən məhsul seçiminə, təklifdən çatdırılmaya qədər vahid əlaqə nöqtəsi kimi idarə edirik.",
-    sectors: "Uyğun sektorlar",
-    scope: "Əhatə",
-    groupsKicker: "Məhsul qrupları",
-    groupsTitle: "Bu həllə daxil olan məhsullar",
-    allGroups: "Bütün məhsul qrupları",
-    process: "Proses",
+  en: {
+    kicker: "Solution Area",
+    request: "Request a Quote for This Solution",
+    need: "Need",
+    needText: "For institutions coming to us with this need, we manage the process as a single point of contact — from analysis to product selection and from quotation to delivery.",
+    sectors: "Relevant sectors",
+    scope: "Scope",
+    groupsKicker: "Product groups",
+    groupsTitle: "Products included in this solution",
+    allGroups: "All product groups",
+    process: "Process",
   },
 };
 
-export function generateStaticParams() {
-  return solutions.map((s) => ({ slug: s.slug }));
+export async function generateStaticParams() {
+  return (await getDb("tr")).solutions.map((s) => ({ slug: s.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/cozum-alanlari/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const s = db(await getLang()).getSolution(slug);
+  const s = (await getDb()).getSolution(slug);
   if (!s) return {};
   return pageMeta(`/cozum-alanlari/${s.slug}`, { title: s.name, description: s.description });
 }
@@ -50,9 +51,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/cozum-alan
 export default async function SolutionPage({ params }: PageProps<"/[lang]/cozum-alanlari/[slug]">) {
   const { slug } = await params;
   const lang = await getLang();
-  const t = copy[lang];
-  const nav = getDict(lang).nav;
-  const { getGroupByCode, getSector, getSolution, processSteps, products } = db(lang);
+  const t = (await pageCopy("pages.cozumAlanlari.slug", copy, lang));
+  const nav = (await getDictionary(lang)).nav;
+  const { getGroupByCode, getSector, getSolution, processSteps, products } = (await getDb(lang));
   const s = getSolution(slug);
   if (!s) notFound();
   const cats = s.groupCodes.map(getGroupByCode).filter((g) => !!g);
@@ -60,7 +61,7 @@ export default async function SolutionPage({ params }: PageProps<"/[lang]/cozum-
 
   return (
     <>
-      <PageHero kicker={t.kicker} title={s.name} text={s.description} crumbs={[{ label: nav.solutions, href: "/cozum-alanlari" }, { label: s.name }]} icon={s.icon}>
+      <PageHero kicker={t.kicker} title={s.name} text={s.description} crumbs={[{ label: nav.solutions, href: "/cozum-alanlari" }, { label: s.name }]} icon={s.icon} image={s.image}>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link href="/teklif-listem#teklif-formu" className="btn-primary">
             {t.request}
@@ -76,6 +77,7 @@ export default async function SolutionPage({ params }: PageProps<"/[lang]/cozum-
             <p className="type-body mt-5">
               {t.needText}
             </p>
+            <RichText html={s.content} className="mt-6" />
             <div className="mt-8">
               <p className="type-small text-muted">{t.sectors}</p>
               <ul className="mt-3 flex flex-wrap gap-2">

@@ -2,8 +2,8 @@ import { Compass, Target } from "lucide-react";
 import { KurumsalNav } from "@/components/KurumsalNav";
 import { Reveal } from "@/components/Reveal";
 import { FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 // Yekun misyon/vizyon mətni DEFNE GROUP tərəfindən təsdiqlənməlidir.
 const copy = {
@@ -22,18 +22,18 @@ const copy = {
       },
     ],
   },
-  az: {
-    description: "DEFNE GROUP-un missiyası və vizyonu.",
+  en: {
+    description: "DEFNE GROUP’s mission and vision.",
     blocks: [
       {
-        kicker: "Missiyamız",
-        title: "Qurumların ehtiyacını düzgün məhsul və düzgün həll ilə vaxtında qarşılamaq.",
-        text: "Geniş məhsul portfelimiz və sektor təcrübəmizlə dövlət və özəl sektor qurumlarının təchizat proseslərini sadələşdirmək; hər sorğunu şəffaf, ölçülə bilən və etibarlı şəkildə nəticələndirmək.",
+        kicker: "Our Mission",
+        title: "To meet institutions’ needs on time with the right product and the right solution.",
+        text: "To simplify the supply processes of public and private sector institutions with our broad product portfolio and sector experience, and to conclude every request in a transparent, measurable and reliable way.",
       },
       {
-        kicker: "Vizyonumuz",
-        title: "Türkiyə üzrə qurumların ilk seçdiyi təchizat və layihə həlləri tərəfdaşı olmaq.",
-        text: "Rəqəmsal infrastrukturumuzu, məhsul biliyini və xidmət keyfiyyətimizi daim inkişaf etdirərək qurumların ehtiyaclarını əvvəlcədən görən, davamlı həllər yaradan bir struktur qurmaq.",
+        kicker: "Our Vision",
+        title: "To be the first-choice supply and project solutions partner for institutions across Türkiye.",
+        text: "To build an organisation that anticipates institutions’ needs and creates sustainable solutions by continuously developing our digital infrastructure, product knowledge and service quality.",
       },
     ],
   },
@@ -43,16 +43,16 @@ const icons = [Target, Compass];
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/kurumsal/misyon-ve-vizyon", { title: getDict(lang).nav.mission, description: copy[lang].description });
+  return pageMeta("/kurumsal/misyon-ve-vizyon", { title: (await getDictionary(lang)).nav.mission, description: (await pageCopy("pages.kurumsal.misyonVeVizyon", copy, lang)).description });
 }
 
 export default async function MissionPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const nav = getDict(lang).nav;
+  const t = (await pageCopy("pages.kurumsal.misyonVeVizyon", copy, lang));
+  const nav = (await getDictionary(lang)).nav;
   return (
     <>
-      <PageHero kicker={nav.corporate} title={nav.mission} crumbs={[{ label: nav.corporate, href: "/kurumsal" }, { label: nav.mission }]} icon="file-check" />
+      <PageHero kicker={nav.corporate} title={nav.mission} crumbs={[{ label: nav.corporate, href: "/kurumsal" }, { label: nav.mission }]} icon="file-check" image={(await getDb(lang)).images.misyonVizyon ?? undefined} />
       <KurumsalNav active="/kurumsal/misyon-ve-vizyon" />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         <div className="container-site grid gap-5 lg:grid-cols-2">

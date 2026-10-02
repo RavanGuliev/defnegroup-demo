@@ -1,8 +1,6 @@
-import { getDict } from "@/i18n/dictionaries";
-import { getLang } from "@/i18n/server";
-import { certificates } from "@/lib/data";
 import { isFinal } from "@/lib/site";
 import Link from "./Link";
+import { getDb, getDictionary } from "@/lib/cms";
 
 /* Kurumsal səhifələri arasında tab keçidi (üst menyudan asılı deyil) */
 const items = [
@@ -13,7 +11,8 @@ const items = [
 ] as const;
 
 export async function KurumsalNav({ active }: { active: string }) {
-  const t = getDict(await getLang()).nav;
+  const t = (await getDictionary()).nav;
+  const { certificates } = await getDb();
   return (
     <nav aria-label={t.corporate} className="sticky top-[72px] z-30 border-b border-line bg-white/95 backdrop-blur lg:top-[84px]">
       <ul className="container-site flex gap-6 overflow-x-auto [scrollbar-width:none] sm:gap-8">

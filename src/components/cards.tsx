@@ -1,18 +1,8 @@
 "use client";
 
+import { useDb, useDict } from "@/components/SiteData";
 import { ArrowRight } from "lucide-react";
-import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
-import {
-  db,
-  groupHref,
-  pad2,
-  productHref,
-  subHref,
-  type Group,
-  type Product,
-  type Subcategory,
-} from "@/lib/data";
+import { groupHref, pad2, productHref, subHref, type Group, type Product, type Subcategory } from "@/lib/data";
 import { AddToQuoteButton } from "./AddToQuoteButton";
 import Link from "./Link";
 import { Media } from "./Media";
@@ -22,9 +12,8 @@ import { Media } from "./Media";
  * Kartın özü də qrup səhifəsinə aparır; saylar məlumatdan avtomatik hesablanır.
  */
 export function GroupCard({ group, priority }: { group: Group; priority?: boolean }) {
-  const lang = useLang();
-  const t = getDict(lang).cards;
-  const { subsOfGroup, productsInGroup } = db(lang);
+  const t = useDict().cards;
+  const { subsOfGroup, productsInGroup } = useDb();
   const subCount = subsOfGroup(group.code).length;
   const productCount = productsInGroup(group.code).length;
   return (
@@ -53,9 +42,8 @@ export function GroupCard({ group, priority }: { group: Group; priority?: boolea
 
 /* Alt bölmə kartı — adı hələ təsdiqlənməyən bölmə “Hazırlanıyor” statusu ilə göstərilir */
 export function SubcategoryCard({ sub }: { sub: Subcategory }) {
-  const lang = useLang();
-  const t = getDict(lang).cards;
-  const { productsInSub, subName } = db(lang);
+  const t = useDict().cards;
+  const { productsInSub, subName } = useDb();
   const count = productsInSub(sub.code).length;
   return (
     <Link
@@ -82,9 +70,8 @@ export function SubcategoryCard({ sub }: { sub: Subcategory }) {
 }
 
 export function ProductCard({ product, index }: { product: Product; index?: number }) {
-  const lang = useLang();
-  const t = getDict(lang).cards;
-  const group = db(lang).productGroup(product);
+  const t = useDict().cards;
+  const group = useDb().productGroup(product);
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[6px] border border-line bg-white transition-shadow duration-300 hover:shadow-[0_18px_40px_-28px_rgba(16,36,63,0.45)]">
       <Link href={productHref(product)} className="relative block aspect-[4/3] overflow-hidden bg-light" tabIndex={-1} aria-hidden>

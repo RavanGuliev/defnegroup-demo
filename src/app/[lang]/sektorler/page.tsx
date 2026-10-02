@@ -3,9 +3,9 @@ import { Icon } from "@/components/Icon";
 import Link from "@/components/Link";
 import { Reveal } from "@/components/Reveal";
 import { FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db, pad2 } from "@/lib/data";
+import { pad2 } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -13,26 +13,26 @@ const copy = {
     title: "Her sektörün diline uygun tedarik",
     text: "Kurumunuzun mevzuatını, satın alma sürecini ve kullanım koşullarını bilen bir ekip ile çalışın.",
   },
-  az: {
-    description: "Bələdiyyələr, valiliklər və dövlət qurumları, təhlükəsizlik bölmələri, səhiyyə, təhsil, otel-restoran, sənaye və sosial xidmət qurumları üçün təchizat.",
-    title: "Hər sektorun dilinə uyğun təchizat",
-    text: "Qurumunuzun qanunvericiliyini, satınalma prosesini və istifadə şərtlərini bilən komanda ilə işləyin.",
+  en: {
+    description: "Supply for municipalities, governorships and public institutions, security units, healthcare, education, hotels and restaurants, industry and social service institutions.",
+    title: "Supply that speaks each sector’s language",
+    text: "Work with a team that knows your institution’s regulations, procurement process and conditions of use.",
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/sektorler", { title: getDict(lang).nav.sectors, description: copy[lang].description });
+  return pageMeta("/sektorler", { title: (await getDictionary(lang)).nav.sectors, description: (await pageCopy("pages.sektorler", copy, lang)).description });
 }
 
 export default async function SectorsPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
-  const { sectors } = db(lang);
+  const t = (await pageCopy("pages.sektorler", copy, lang));
+  const d = (await getDictionary(lang));
+  const { sectors } = (await getDb(lang));
   return (
     <>
-      <PageHero kicker={d.nav.sectors} title={t.title} text={t.text} crumbs={[{ label: d.nav.sectors }]} icon="landmark" />
+      <PageHero kicker={d.nav.sectors} title={t.title} text={t.text} crumbs={[{ label: d.nav.sectors }]} icon="landmark" image={(await getDb(lang)).images.sektorler ?? undefined} />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         <ul className="container-site grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
           {sectors.map((s, i) => (

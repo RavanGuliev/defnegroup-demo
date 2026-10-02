@@ -5,10 +5,12 @@ import { Header } from "@/components/Header";
 import { QuoteProvider } from "@/components/QuoteProvider";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { localeLabels, locales } from "@/i18n/config";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang } from "@/i18n/server";
 import { indexable, site } from "@/lib/site";
 import "../globals.css";
+import { SiteDataProvider } from "@/components/SiteData";
+import { getDictionary, getRaw } from "@/lib/cms";
+import { liteRaw } from "@/lib/store";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -23,8 +25,11 @@ export function generateStaticParams() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLang();
-  const t = getDict(lang).meta;
+  const t = (await getDictionary(lang)).meta;
+  const brand = (await getRaw(lang)).site;
   return {
+    // Favicon və paylaşım şəkli paneldən (Site Ayarları → Marka)
+    ...(brand.favicon && { icons: { icon: brand.favicon, apple: brand.favicon } }),
     metadataBase: new URL(site.url),
     title: { default: t.title, template: "%s | DEFNE GROUP" },
     description: t.description,
@@ -40,6 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: site.name,
       title: t.title,
       description: t.description,
+      ...(brand.ogImage && { images: [{ url: brand.ogImage, width: 1200, height: 630 }] }),
     },
   };
 }
@@ -50,13 +56,17 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   const lang = await getLang();
-  const t = getDict(lang);
+  const t = (await getDictionary(lang));
+  const raw = await getRaw(lang);
   const organizationLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: site.name,
+    name: raw.site.name,
     url: site.url,
-    email: site.contact.email,
+    email: raw.site.contact.email ?? undefined,
+    telephone: raw.site.contact.phone ?? undefined,
+    logo: raw.site.logo ?? undefined,
+    sameAs: Object.values(raw.site.social),
     description: t.meta.description,
   };
 
@@ -70,14 +80,16 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
           {t.common.skipToContent}
         </a>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }} />
-        <QuoteProvider>
-          <Header />
-          <main id="icerik" className="min-w-0 flex-1">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppButton />
-        </QuoteProvider>
+        <SiteDataProvider raw={liteRaw(raw)}>
+          <QuoteProvider>
+            <Header />
+            <main id="icerik" className="min-w-0 flex-1">
+              {children}
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </QuoteProvider>
+        </SiteDataProvider>
       </body>
     </html>
   );

@@ -3,9 +3,9 @@ import Link from "@/components/Link";
 import { Media } from "@/components/Media";
 import { Reveal } from "@/components/Reveal";
 import { FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db, pad2 } from "@/lib/data";
+import { pad2 } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -14,27 +14,27 @@ const copy = {
     text: "Ürün gruplarını tek tek değil; kurumunuzun ihtiyacına göre planlanmış, teknik ve lojistik olarak bütünleşik projeler olarak sunuyoruz.",
     inspect: "Çözümü incele",
   },
-  az: {
-    description: "Ehtiyaca görə kompleks təchizat həlləri: sığınacaq təchizatı, şəhər təchizatı, fəlakət təchizatı, gigiyena proqramları və personalın təchizatı.",
-    title: "Ehtiyacınızdan irəli gələn kompleks həllər",
-    text: "Məhsul qruplarını ayrı-ayrılıqda deyil; qurumunuzun ehtiyacına görə planlaşdırılmış, texniki və logistik baxımdan vahid layihələr kimi təqdim edirik.",
-    inspect: "Həllə bax",
+  en: {
+    description: "Complete supply solutions built around your needs: shelter equipment, urban equipment, disaster supply, hygiene programmes and staff outfitting.",
+    title: "Complete solutions driven by your needs",
+    text: "Rather than offering product groups separately, we deliver them as single projects planned around your institution’s needs, both technically and logistically.",
+    inspect: "View solution",
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/cozum-alanlari", { title: getDict(lang).nav.solutions, description: copy[lang].description });
+  return pageMeta("/cozum-alanlari", { title: (await getDictionary(lang)).nav.solutions, description: (await pageCopy("pages.cozumAlanlari", copy, lang)).description });
 }
 
 export default async function SolutionsPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const nav = getDict(lang).nav;
-  const { solutions } = db(lang);
+  const t = (await pageCopy("pages.cozumAlanlari", copy, lang));
+  const nav = (await getDictionary(lang)).nav;
+  const { solutions } = (await getDb(lang));
   return (
     <>
-      <PageHero kicker={nav.solutions} title={t.title} text={t.text} crumbs={[{ label: nav.solutions }]} icon="clipboard" />
+      <PageHero kicker={nav.solutions} title={t.title} text={t.text} crumbs={[{ label: nav.solutions }]} icon="clipboard" image={(await getDb(lang)).images.cozumAlanlari ?? undefined} />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         <div className="container-site grid gap-5 md:grid-cols-2">
           {solutions.map((s, i) => (

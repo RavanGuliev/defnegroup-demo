@@ -1,11 +1,11 @@
 "use client";
 
+import { useDb, useDict } from "@/components/SiteData";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronDown, ClipboardList, Menu, Search, X } from "lucide-react";
 import { localeLabels, locales, stripLocale } from "@/i18n/config";
 import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
 import { homeNav, mainNav, navVisible, type NavItem } from "@/lib/site";
 import Link from "./Link";
 import { Logo } from "./Logo";
@@ -21,7 +21,7 @@ function LanguageSwitch({ className = "", overHero }: { className?: string; over
   const lang = useLang();
   const path = stripLocale(usePathname());
   return (
-    <div role="group" aria-label={getDict(lang).common.language} className={`inline-flex items-center rounded-full border p-0.5 ${overHero ? "border-white/30" : "border-line"} ${className}`}>
+    <div role="group" aria-label={useDict().common.language} className={`inline-flex items-center rounded-full border p-0.5 ${overHero ? "border-white/30" : "border-line"} ${className}`}>
       {locales.map((l) => (
         <Link
           key={l}
@@ -42,8 +42,7 @@ function LanguageSwitch({ className = "", overHero }: { className?: string; over
 }
 
 export function Header() {
-  const lang = useLang();
-  const t = getDict(lang);
+  const t = useDict();
   const fullPath = usePathname();
   const pathname = stripLocale(fullPath);
   const { count } = useQuote();
@@ -78,7 +77,9 @@ export function Header() {
 
   const tone = overHero ? "text-white" : "text-ink";
   const itemActive = (item: NavItem) => isActive(pathname, item.href) || !!item.children?.some((c) => isActive(pathname, c.href));
-  const subItems = (item: NavItem) => item.children?.filter(navVisible) ?? [];
+  const db = useDb();
+  const counts = { projects: db.projects.length, certificates: db.certificates.length };
+  const subItems = (item: NavItem) => item.children?.filter((c) => navVisible(c, counts)) ?? [];
 
   return (
     <>

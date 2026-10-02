@@ -8,20 +8,20 @@
  */
 
 import type { Locale } from "../i18n/config";
+import type { RawData } from "./store";
 import { isFinal } from "./flags";
 import {
-  azCatalogs,
-  azCatalogTypes,
-  azGroups,
-  azProcessSteps,
-  azProducts,
-  azSectors,
-  azSolutions,
-  azSubcategories,
-  azSubFallback,
-  azTrustItems,
-  azUsageAreas,
-} from "./content-az";
+  enCatalogs,
+  enCatalogTypes,
+  enGroups,
+  enProcessSteps,
+  enProducts,
+  enSectors,
+  enSolutions,
+  enSubcategories,
+  enTrustItems,
+  enUsageAreas,
+} from "./content-en";
 
 export type IconName =
   | "paw"
@@ -228,6 +228,7 @@ const subcategoryNames: Record<string, string> = {
 export type Subcategory = {
   code: string;
   groupCode: string;
+  groupSlug: string;
   slug: string;
   /** Təsdiqlənmiş ad yoxdursa boşdur — `subName()` ilə göstərilir. */
   name?: string;
@@ -250,13 +251,13 @@ export const subcategories: Subcategory[] = groups.flatMap((g) =>
   Array.from({ length: g.subCount }, (_, i) => {
     const code = `${g.code}.${String(i + 1).padStart(2, "0")}`;
     const name = subcategoryNames[code];
-    return { code, groupCode: g.code, slug: name ? slugify(name) : code.replace(".", "-"), name, pending: !name };
+    return { code, groupCode: g.code, groupSlug: g.slug, slug: name ? slugify(name) : code.replace(".", "-"), name, pending: !name };
   }),
 );
 
 export const subName = (s: Subcategory) => s.name ?? `Alt Kategori ${s.code}`;
 
-export type Sector = { slug: string; name: string; description: string; icon: IconName };
+export type Sector = { slug: string; name: string; description: string; icon: IconName; image?: string; content?: string };
 
 export const sectors: Sector[] = [
   {
@@ -318,6 +319,9 @@ export type Solution = {
   groupCodes: string[];
   sectorSlugs: string[];
   icon: IconName;
+  image?: string;
+  /** Detal səhifəsinin uzun mətni (paneldəki redaktordan HTML). */
+  content?: string;
 };
 
 export const solutions: Solution[] = [
@@ -419,7 +423,7 @@ export const trustItems = [
   { title: "Türkiye geneli hizmet", icon: "truck" as IconName },
 ];
 
-export type ProductDoc = { name: string; type: "PDF" | "DOCX" | "XLSX"; size: string };
+export type ProductDoc = { name: string; type: string; size?: string; url?: string };
 
 export type Product = {
   slug: string;
@@ -448,11 +452,18 @@ export type Product = {
   isNew?: boolean;
   featured?: boolean;
   images?: string[];
+  /** Keçid yolu üçün (/urunler/{groupSlug}/{subSlug}/{slug}) */
+  groupSlug?: string;
+  subSlug?: string;
+  /** Axtarış mətni (TR + EN, normallaşdırılmış) */
+  searchText?: string;
+  /** description HTML-dirsə (paneldəki redaktor) */
+  descriptionHtml?: boolean;
 };
 
 export const usageAreas = ["Barınak", "Saha", "Klinik", "Kamusal alan", "Park", "Mutfak", "Ofis", "Depo"];
 
-export const allProducts: Product[] = [
+const rawProducts: Product[] = [
   {
     slug: "paslanmaz-barinak-kafesi-modul",
     code: "DG-SH-1001",
@@ -769,18 +780,25 @@ export const allProducts: Product[] = [
  * Layihələr və sənədlər — yalnız real, dərc icazəsi alınmış və təsdiqlənmiş olduqda əlavə olunur
  * (müştəri adı yalnız yazılı icazə ilə). Boş olduqda son yayında menyu keçidləri gizlədilir.
  */
-export type Project = { slug: string; title: string; sectorSlug?: string; solutionSlug?: string; year?: number; summary?: string; images?: string[] };
+/** Statik məhsullara keçid yolu əlavə olunur (API-dən gələn məhsullarda bu sahələr hazır gəlir). */
+export const allProducts: Product[] = rawProducts.map((p) => {
+  const sub = subcategories.find((s) => s.code === p.subCode);
+  return { ...p, groupSlug: sub?.groupSlug ?? groups.find((g) => g.code === p.groupCode)?.slug, subSlug: sub?.slug };
+});
+
 export const projects: Project[] = [];
 
-export type Certificate = { slug: string; name: string; type: string; validUntil?: string; file: string };
+export type Project = { slug: string; title: string; sectorSlug?: string; solutionSlug?: string; year?: number; summary?: string; content?: string; clientName?: string; images?: string[] };
+export type Certificate = { slug: string; name: string; type: string; issuer?: string; validUntil?: string; file: string; preview?: string };
 export const certificates: Certificate[] = [];
 
 export type Catalog = {
   slug: string;
   name: string;
-  type: "Ürün Kataloğu" | "Teknik Doküman" | "Kurumsal Tanıtım";
+  type: string;
   updatedAt: string;
   file?: string;
+  cover?: string;
   groupCode?: string;
 };
 
@@ -823,107 +841,71 @@ export const catalogs: Catalog[] = [
 /** Saytda göstərilən məhsullar: təsdiqsiz qeydlər çıxarılır; son yayında nümunə (demo) məhsullar da gizlədilir. */
 export const products = allProducts.filter((p) => p.published !== false && !(isFinal && p.sample));
 
-export const getGroup = (slug: string) => groups.find((g) => g.slug === slug);
-export const getGroupByCode = (code: string) => groups.find((g) => g.code === code);
-export const getSub = (code: string) => subcategories.find((s) => s.code === code);
-export const getSubBySlug = (groupCode: string, slug: string) => subcategories.find((s) => s.groupCode === groupCode && s.slug === slug);
-export const subsOfGroup = (groupCode: string) => subcategories.filter((s) => s.groupCode === groupCode);
-export const getSector = (slug: string) => sectors.find((s) => s.slug === slug);
-export const getSolution = (slug: string) => solutions.find((s) => s.slug === slug);
-export const getProduct = (slug: string) => products.find((p) => p.slug === slug);
-
 export const productGroupCode = (p: Product) => p.groupCode ?? p.subCode.slice(0, 2);
-export const productGroup = (p: Product) => getGroupByCode(productGroupCode(p))!;
-export const productsInSub = (code: string) => products.filter((p) => p.subCode === code);
-export const productsInGroup = (code: string) => products.filter((p) => productGroupCode(p) === code);
-/** Başqa qrupda əsas qeydi olan, bu qrupdan keçid verilən məhsullar. */
-export const linkedProductsForGroup = (code: string) => products.filter((p) => p.crossGroups?.includes(code));
-export const productsInSector = (slug: string) => products.filter((p) => p.sectorSlugs.includes(slug));
-
-export const groupHref = (g: Group) => `/urunler/${g.slug}`;
-export const subHref = (s: Subcategory) => `/urunler/${getGroupByCode(s.groupCode)!.slug}/${s.slug}`;
-export const productHref = (p: Product) => `${subHref(getSub(p.subCode)!)}/${p.slug}`;
+export const groupHref = (g: Pick<Group, "slug">) => `/urunler/${g.slug}`;
+export const subHref = (s: Pick<Subcategory, "groupSlug" | "slug">) => `/urunler/${s.groupSlug}/${s.slug}`;
+export const productHref = (p: Pick<Product, "groupSlug" | "subSlug" | "slug">) => `/urunler/${p.groupSlug}/${p.subSlug}/${p.slug}`;
 export const allProductsHref = "/urunler/tum-urunler";
 export const pad2 = (n: number) => String(n).padStart(2, "0");
 
-/* ---------- dilə görə məlumat ----------
- * Struktur (kod, slug, keçid) hər iki dildə eynidir; yalnız mətnlər tərcümə olunur.
- * Səhifələr `db(lang)` ilə cari dildə massivləri və axtarış funksiyalarını alır.
+/* ---------- statik məlumat (API əlçatan olmadıqda) ----------
+ * API ilə eyni formada, cari dilə tərcümə olunmuş məlumat (store.ts → makeDb).
  */
-
-function build(lang: Locale) {
-  const az = lang === "az";
-  const usage = (u: string) => (az ? (azUsageAreas[u] ?? u) : u);
-
-  const G: Group[] = az ? groups.map((g) => ({ ...g, name: azGroups[g.code] ?? g.name })) : groups;
-  const S: Subcategory[] = az ? subcategories.map((s) => (azSubcategories[s.code] ? { ...s, name: azSubcategories[s.code] } : s)) : subcategories;
-  const P: (Product & { searchText: string })[] = products.map((p) => {
-    const t = az ? azProducts[p.slug] : undefined;
-    const base = normalize([p.name, p.code, p.summary, ...p.keywords].join(" "));
-    if (!t) return { ...p, searchText: base };
-    return {
-      ...p,
-      name: t.name,
-      summary: t.summary,
-      description: t.description,
-      features: t.features,
-      specs: t.specs.map(([label, value]) => ({ label, value })),
-      variants: t.variants ?? p.variants,
-      packaging: t.packaging,
-      documents: p.documents.map((d, i) => ({ ...d, name: t.documents?.[i] ?? d.name })),
-      usageAreas: p.usageAreas.map(usage),
-      keywords: t.keywords,
-      // Axtarış hər iki dildə işləyir
-      searchText: `${base} ${normalize([t.name, t.summary, ...t.keywords].join(" "))}`,
-    };
-  });
-
-  const getGroupByCode = (code: string) => G.find((g) => g.code === code);
-  const getSub = (code: string) => S.find((s) => s.code === code);
-  const subName = (s: Subcategory) => s.name ?? `${az ? azSubFallback : "Alt Kategori"} ${s.code}`;
-  const productGroup = (p: Product) => getGroupByCode(productGroupCode(p))!;
+export function staticRaw(lang: Locale): RawData {
+  const en = lang === "en";
+  const usage = (u: string) => (en ? (enUsageAreas[u] ?? u) : u);
+  const products = allProducts.filter((p) => p.published !== false && !(isFinal && p.sample));
 
   return {
     lang,
-    groups: G,
-    subcategories: S,
-    products: P as Product[],
-    sectors: az ? sectors.map((s) => ({ ...s, ...azSectors[s.slug] })) : sectors,
-    solutions: az ? solutions.map((s) => ({ ...s, ...azSolutions[s.slug] })) : solutions,
-    processSteps: az ? processSteps.map((s, i) => ({ ...s, ...azProcessSteps[i] })) : processSteps,
-    trustItems: az ? trustItems.map((t, i) => ({ ...t, title: azTrustItems[i] })) : trustItems,
+    source: "static",
+    groups: en ? groups.map((g) => ({ ...g, name: enGroups[g.code] ?? g.name })) : groups,
+    subcategories: en ? subcategories.map((s) => (enSubcategories[s.code] ? { ...s, name: enSubcategories[s.code] } : s)) : subcategories,
+    products: products.map((p) => {
+      const t = en ? enProducts[p.slug] : undefined;
+      const base = normalize([p.name, p.code, p.summary, ...p.keywords].join(" "));
+      if (!t) return { ...p, searchText: base };
+      return {
+        ...p,
+        name: t.name,
+        summary: t.summary,
+        description: t.description,
+        features: t.features,
+        specs: t.specs.map(([label, value]) => ({ label, value })),
+        variants: t.variants ?? p.variants,
+        packaging: t.packaging,
+        documents: p.documents.map((d, i) => ({ ...d, name: t.documents?.[i] ?? d.name })),
+        usageAreas: p.usageAreas.map(usage),
+        keywords: t.keywords,
+        searchText: `${base} ${normalize([t.name, t.summary, ...t.keywords].join(" "))}`,
+      };
+    }),
+    sectors: en ? sectors.map((s) => ({ ...s, ...enSectors[s.slug] })) : sectors,
+    solutions: en ? solutions.map((s) => ({ ...s, ...enSolutions[s.slug] })) : solutions,
+    processSteps: en ? processSteps.map((s, i) => ({ ...s, ...enProcessSteps[i] })) : processSteps,
+    trustItems: en ? trustItems.map((t, i) => ({ ...t, title: enTrustItems[i] })) : trustItems,
     usageAreas: usageAreas.map(usage),
-    catalogs: az ? catalogs.map((c) => ({ ...c, name: azCatalogs[c.slug] ?? c.name, type: (azCatalogTypes[c.type] ?? c.type) as Catalog["type"] })) : catalogs,
-
-    getGroup: (slug: string) => G.find((g) => g.slug === slug),
-    getGroupByCode,
-    getSub,
-    getSubBySlug: (groupCode: string, slug: string) => S.find((s) => s.groupCode === groupCode && s.slug === slug),
-    subsOfGroup: (groupCode: string) => S.filter((s) => s.groupCode === groupCode),
-    getSector: (slug: string) => (az ? sectors.map((s) => ({ ...s, ...azSectors[s.slug] })) : sectors).find((s) => s.slug === slug),
-    getSolution: (slug: string) => (az ? solutions.map((s) => ({ ...s, ...azSolutions[s.slug] })) : solutions).find((s) => s.slug === slug),
-    getProduct: (slug: string) => P.find((p) => p.slug === slug) as Product | undefined,
-    productGroup,
-    productsInSub: (code: string) => P.filter((p) => p.subCode === code) as Product[],
-    productsInGroup: (code: string) => P.filter((p) => productGroupCode(p) === code) as Product[],
-    linkedProductsForGroup: (code: string) => P.filter((p) => p.crossGroups?.includes(code)) as Product[],
-    productsInSector: (slug: string) => P.filter((p) => p.sectorSlugs.includes(slug)) as Product[],
-    subName,
-    /** Ad, kod, açar söz və kateqoriya adına görə axtarış (Türk/Azərbaycan hərfləri normallaşdırılır). */
-    searchProducts(query: string, list: Product[] = P) {
-      const q = normalize(query);
-      if (!q) return list;
-      const terms = q.split(/\s+/);
-      return list.filter((p) => {
-        const own = (p as Product & { searchText?: string }).searchText ?? "";
-        const sub = getSub(p.subCode);
-        const hay = `${own} ${normalize([productGroup(p).name, sub ? subName(sub) : ""].join(" "))}`;
-        return terms.every((t) => hay.includes(t));
-      });
+    catalogs: en ? catalogs.map((c) => ({ ...c, name: enCatalogs[c.slug] ?? c.name, type: enCatalogTypes[c.type] ?? c.type })) : catalogs,
+    projects,
+    certificates,
+    site: {
+      name: "DEFNE GROUP",
+      logo: null,
+      logoLight: null,
+      favicon: null,
+      ogImage: null,
+      social: {},
+      contact: { email: "info@defnegroup.com", quoteEmail: "teklif@defnegroup.com", phone: null, whatsapp: null, address: null, mapUrl: null, mapQuery: null, workingHours: null },
+      showLocation: true,
+      fairPhotos: [],
+      heroSlides: [
+        { label: null, image: null, groupCodes: ["07", "02", "12"] },
+        { label: null, image: null, groupCodes: ["01", "08", "16"] },
+        { label: null, image: null, groupCodes: ["03", "09", "05"] },
+        { label: null, image: null, groupCodes: ["04", "10", "06"] },
+      ],
     },
+    images: {},
+    content: {},
   };
 }
-
-export type Db = ReturnType<typeof build>;
-const cache: Partial<Record<Locale, Db>> = {};
-export const db = (lang: Locale): Db => (cache[lang] ??= build(lang));

@@ -1,11 +1,10 @@
 "use client";
 
+import { useDb, useDict } from "@/components/SiteData";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
-import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
-import { db, productGroupCode, type Product } from "@/lib/data";
+import { productGroupCode, type Product } from "@/lib/data";
 import { ProductCard } from "../cards";
 import { EmptyState } from "../EmptyState";
 import Link from "../Link";
@@ -30,9 +29,10 @@ function toggle(list: string[], v: string) {
  * filtri gizlənir — sektor və istifadə sahəsi filtrləri köməkçidir, alt bölmə quruluşunu əvəz etmir.
  */
 export function ProductExplorer({ locked, baseProducts }: { locked?: boolean; baseProducts?: Product[] }) {
-  const lang = useLang();
-  const t = getDict(lang).explorer;
-  const { groups, productsInSub, sectors, subName, subsOfGroup, usageAreas } = db(lang);
+  const dict = useDict();
+  const t = dict.explorer;
+  const data = useDb();
+  const { groups, productsInSub, sectors, subName, subsOfGroup, usageAreas } = data;
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -66,7 +66,6 @@ export function ProductExplorer({ locked, baseProducts }: { locked?: boolean; ba
   }, [drawer]);
 
   const results = useMemo(() => {
-    const data = db(lang);
     let list = baseProducts ?? data.products;
     list = data.searchProducts(q, list);
     if (!locked && (f.groups.length || f.subs.length))
@@ -78,7 +77,7 @@ export function ProductExplorer({ locked, baseProducts }: { locked?: boolean; ba
     if (f.withDocs) list = list.filter((p) => p.documents.length > 0);
     if (f.onlyNew) list = list.filter((p) => p.isNew);
     return list;
-  }, [q, f, locked, baseProducts, lang]);
+  }, [q, f, locked, baseProducts, data]);
 
   const activeCount =
     (locked ? 0 : f.groups.length + f.subs.length) + f.sectors.length + f.usage.length + (f.withDocs ? 1 : 0) + (f.onlyNew ? 1 : 0);
@@ -202,7 +201,7 @@ export function ProductExplorer({ locked, baseProducts }: { locked?: boolean; ba
                     </button>
                   )}
                   <Link href="/teklif-listem#teklif-formu" className="btn-primary">
-                    {getDict(lang).cta.send}
+                    {dict.cta.send}
                   </Link>
                 </div>
               }

@@ -1,18 +1,22 @@
-import { getDict } from "@/i18n/dictionaries";
 import { getLang } from "@/i18n/server";
-import { db, groupHref } from "@/lib/data";
-import { mainNav, navVisible, site } from "@/lib/site";
+import { groupHref } from "@/lib/data";
+import { mainNav, navVisible, site, telHref } from "@/lib/site";
 import Link from "./Link";
 import { Logo } from "./Logo";
+import { FooterLanguageSwitch } from "./FooterLanguageSwitch";
+import { getDb, getDictionary } from "@/lib/cms";
 
 const colTitle = "text-[11px] font-semibold tracking-[0.18em] text-white/40 uppercase";
 const linkCls = "inline-flex min-h-10 items-center text-sm text-white/65 transition-colors duration-200 hover:text-white";
 
 export async function Footer() {
   const lang = await getLang();
-  const t = getDict(lang);
-  const { groups, solutions } = db(lang);
-  const c = site.contact;
+  const t = (await getDictionary(lang));
+  const db = await getDb(lang);
+  const { groups, solutions } = db;
+  const c = db.site.contact;
+  const counts = { projects: db.projects.length, certificates: db.certificates.length };
+  const social = Object.entries(db.site.social);
   return (
     <footer className="leaf-motif bg-navy text-white">
       <div className="container-site py-12 sm:py-14 lg:py-16">
@@ -30,7 +34,7 @@ export async function Footer() {
           <div>
             <p className={colTitle}>{t.common.quickMenu}</p>
             <ul className="mt-5 space-y-1">
-              {mainNav.flatMap((i) => i.children ?? [i]).filter(navVisible).map((i) => (
+              {mainNav.flatMap((i) => i.children ?? [i]).filter((i) => navVisible(i, counts)).map((i) => (
                 <li key={i.href}>
                   <Link className={linkCls} href={i.href}>
                     {t.nav[i.key]}
@@ -76,29 +80,46 @@ export async function Footer() {
             <ul className="mt-5 space-y-1 text-sm text-white/65">
               {c.phone && (
                 <li>
-                  <a href={`tel:${c.phoneHref}`} className={linkCls}>
+                  <a href={telHref(c.phone)} className={linkCls}>
                     {c.phone}
                   </a>
                 </li>
               )}
-              <li>
-                <a href={`mailto:${c.email}`} className={linkCls}>
-                  {c.email}
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${c.quoteEmail}`} className={linkCls}>
-                  {c.quoteEmail}
-                </a>
-              </li>
+              {c.email && (
+                <li>
+                  <a href={`mailto:${c.email}`} className={linkCls}>
+                    {c.email}
+                  </a>
+                </li>
+              )}
+              {c.quoteEmail && (
+                <li>
+                  <a href={`mailto:${c.quoteEmail}`} className={linkCls}>
+                    {c.quoteEmail}
+                  </a>
+                </li>
+              )}
               {c.address && <li className="max-w-xs py-2 text-white/50">{c.address}</li>}
+              {c.workingHours && <li className="max-w-xs pb-2 text-white/50">{c.workingHours}</li>}
             </ul>
+            {social.length > 0 && (
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {social.map(([name, url]) => (
+                  <li key={name}>
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full border border-white/15 px-3 text-[12px] font-semibold text-white/75 capitalize hover:border-white/40 hover:text-white">
+                      {name === "x" ? "X" : name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <FooterLanguageSwitch className="mt-5" />
           </div>
         </div>
       </div>
       <div className="border-t border-white/10">
         <div className="container-site flex flex-col gap-2 py-5 text-sm text-white/40 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} DEFNE GROUP. {t.common.allRights}</p>
+          <p>{t.footer.copyright(new Date().getFullYear())}</p>
           <div className="flex gap-6">
             <Link className="inline-flex min-h-11 items-center hover:text-white/75" href="/kvkk">
               {t.nav.kvkk}

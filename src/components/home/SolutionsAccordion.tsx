@@ -1,10 +1,9 @@
 "use client";
 
+import { useDb, useDict } from "@/components/SiteData";
 import { useState } from "react";
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
-import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
-import { db, pad2, type Solution } from "@/lib/data";
+import { pad2, type Solution } from "@/lib/data";
 import Link from "../Link";
 import { Icon } from "../Icon";
 import { Media } from "../Media";
@@ -12,9 +11,8 @@ import { Media } from "../Media";
 export function SolutionsAccordion({ solutions }: { solutions: Solution[] }) {
   const [open, setOpen] = useState(0);
   const current = solutions[open] ?? solutions[0];
-  const lang = useLang();
-  const t = getDict(lang).solutionsAcc;
-  const { getGroupByCode } = db(lang);
+  const t = useDict().solutionsAcc;
+  const { getGroupByCode } = useDb();
 
   return (
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(280px,0.88fr)] lg:gap-14">

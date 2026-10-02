@@ -1,8 +1,7 @@
 "use client";
 
+import { useDict } from "@/components/SiteData";
 import { useState } from "react";
-import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
 import type { IconName } from "@/lib/data";
 import { Media } from "../Media";
 
@@ -10,7 +9,7 @@ export function ProductGallery({ images, name, icon }: { images?: string[]; name
   // Şəkil yoxdursa, qalereya quruluşunu göstərmək üçün 4 boş yer tutucu
   const slots: (string | undefined)[] = images?.length ? images : [undefined, undefined, undefined, undefined];
   const [active, setActive] = useState(0);
-  const t = getDict(useLang()).gallery;
+  const t = useDict().gallery;
 
   return (
     <div>

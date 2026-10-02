@@ -5,7 +5,7 @@ import { useLang } from "@/i18n/client";
 
 const copy = {
   tr: { title: "Sayfa bulunamadı", text: "Aradığınız sayfa taşınmış veya kaldırılmış olabilir.", home: "Ana Sayfaya Dön", products: "Ürün Gruplarını İnceleyin" },
-  az: { title: "Səhifə tapılmadı", text: "Axtardığınız səhifə köçürülmüş və ya silinmiş ola bilər.", home: "Ana Səhifəyə Qayıt", products: "Məhsul Qruplarına Baxın" },
+  en: { title: "Page not found", text: "The page you are looking for may have been moved or deleted.", home: "Back to Home", products: "Explore Product Groups" },
 };
 
 export default function NotFound() {

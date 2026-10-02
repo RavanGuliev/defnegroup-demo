@@ -1,4 +1,3 @@
-import { certificates, projects } from "./data";
 import { isFinal } from "./flags";
 
 export { isFinal };
@@ -65,10 +64,13 @@ export const mainNav: NavItem[] = [
 
 export const homeNav: NavItem = { key: "home", href: "/" };
 
-/** Son yayında məzmunu olmayan səhifələrin menyu keçidi gizlədilir. */
-export function navVisible(item: NavItem) {
+/** Son yayında məzmunu olmayan səhifələrin (layihələr, sənədlər) menyu keçidi gizlədilir. */
+export function navVisible(item: NavItem, counts: { projects: number; certificates: number }) {
   if (!isFinal) return true;
-  if (item.key === "projects") return projects.length > 0;
-  if (item.key === "certificates") return certificates.length > 0;
+  if (item.key === "projects") return counts.projects > 0;
+  if (item.key === "certificates") return counts.certificates > 0;
   return true;
 }
+
+/** Telefon nömrəsindən tel: keçidi (boşluq, mötərizə və tire silinir). */
+export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;

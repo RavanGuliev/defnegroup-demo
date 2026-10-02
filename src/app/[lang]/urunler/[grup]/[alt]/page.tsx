@@ -5,9 +5,9 @@ import Link from "@/components/Link";
 import { CatalogHeader } from "@/components/products/CatalogHeader";
 import { ProductExplorer } from "@/components/products/ProductExplorer";
 import { EmptyState, FinalCta } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
-import { getLang, pageMeta } from "@/i18n/server";
-import { db, getGroupByCode, groupHref, subcategories, subHref } from "@/lib/data";
+import { pageMeta } from "@/i18n/server";
+import { groupHref, subHref } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -17,22 +17,22 @@ const copy = {
     emptyTitle: "Bu alt kategorinin ürünleri hazırlanıyor",
     emptyText: "Ürün bilgileri ve görselleri onaylandıktan sonra burada yayımlanacak. İhtiyacınızı şimdiden teklif formundan iletebilirsiniz.",
   },
-  az: {
-    kicker: "Alt kateqoriya",
-    metaDescription: (g: string, s: string) => `${g} qrupunda ${s} məhsulları.`,
-    subsOf: (g: string) => `${g} alt kateqoriyaları`,
-    emptyTitle: "Bu alt kateqoriyanın məhsulları hazırlanır",
-    emptyText: "Məhsul məlumatları və şəkilləri təsdiqləndikdən sonra burada dərc olunacaq. Ehtiyacınızı indidən təklif forması ilə göndərə bilərsiniz.",
+  en: {
+    kicker: "Subcategory",
+    metaDescription: (g: string, s: string) => `${s} products in the ${g} group.`,
+    subsOf: (g: string) => `${g} subcategories`,
+    emptyTitle: "Products in this subcategory are being prepared",
+    emptyText: "Product information and images will be published here once approved. You can already send your request using the quote form.",
   },
 };
 
-export function generateStaticParams() {
-  return subcategories.map((s) => ({ grup: getGroupByCode(s.groupCode)!.slug, alt: s.slug }));
+export async function generateStaticParams() {
+  return (await getDb("tr")).subcategories.map((s) => ({ grup: s.groupSlug, alt: s.slug }));
 }
 
 async function resolve(params: PageProps<"/[lang]/urunler/[grup]/[alt]">["params"]) {
   const { grup, alt } = await params;
-  const d = db(await getLang());
+  const d = (await getDb());
   const group = d.getGroup(grup);
   const sub = group && d.getSubBySlug(group.code, alt);
   return group && sub ? { group, sub, d } : null;
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/urunler/[g
   const name = r.d.subName(r.sub);
   return pageMeta(subHref(r.sub), {
     title: `${name} | ${r.group.name}`,
-    description: copy[r.d.lang].metaDescription(r.group.name, name),
+    description: (await pageCopy("pages.urunler.grup.alt", copy, r.d.lang)).metaDescription(r.group.name, name),
     // Adı təsdiqlənməyən alt bölmə hazırlıq statusundadır — indekslənmir
     ...(r.sub.pending && { robots: { index: false, follow: true } }),
   });
@@ -56,8 +56,8 @@ export default async function SubcategoryPage({ params }: PageProps<"/[lang]/uru
   if (!r) notFound();
   const { group, sub } = r;
   const { productsInSub, subName, subsOfGroup, lang } = r.d;
-  const t = copy[lang];
-  const dict = getDict(lang);
+  const t = (await pageCopy("pages.urunler.grup.alt", copy, lang));
+  const dict = (await getDictionary(lang));
   const list = productsInSub(sub.code);
   const siblings = subsOfGroup(group.code);
 

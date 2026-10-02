@@ -2,9 +2,9 @@ import { ArrowRight, Award, Compass, Info, ThumbsUp } from "lucide-react";
 import Link from "@/components/Link";
 import { Reveal } from "@/components/Reveal";
 import { FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
 import { pad2 } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -18,11 +18,11 @@ const copy = {
       "Onaylı belge ve sertifikalarımız.",
     ],
   },
-  az: {
-    description: "DEFNE GROUP haqqında: missiya və vizyonumuz, iş prinsiplərimiz, sənədlərimiz.",
-    title: "Etibarlı təchizat, məsuliyyətli tərəfdaşlıq",
-    text: "DEFNE GROUP dövlət qurumları və özəl sektorun təchizat proseslərini bir mərkəzdən, şəffaf və qeydiyyatla idarə etmək üçün çalışır.",
-    cards: ["Kim olduğumuzu və necə işlədiyimizi tanıyın.", "Bizi istiqamətləndirən məqsəd və hədəflər.", "Qurumların bizi seçmə səbəbləri.", "Təsdiqlənmiş sənəd və sertifikatlarımız."],
+  en: {
+    description: "About DEFNE GROUP: our mission and vision, our working principles and our documents.",
+    title: "Reliable supply, responsible partnership",
+    text: "DEFNE GROUP works to manage the supply processes of public institutions and the private sector from a single point, transparently and fully documented.",
+    cards: ["Get to know who we are and how we work.", "The purpose and goals that guide us.", "Why institutions choose us.", "Our approved documents and certificates."],
   },
 };
 
@@ -35,16 +35,16 @@ const cards = [
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/kurumsal", { title: getDict(lang).nav.corporate, description: copy[lang].description });
+  return pageMeta("/kurumsal", { title: (await getDictionary(lang)).nav.corporate, description: (await pageCopy("pages.kurumsal", copy, lang)).description });
 }
 
 export default async function KurumsalPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const nav = getDict(lang).nav;
+  const t = (await pageCopy("pages.kurumsal", copy, lang));
+  const nav = (await getDictionary(lang)).nav;
   return (
     <>
-      <PageHero kicker={nav.corporate} title={t.title} text={t.text} crumbs={[{ label: nav.corporate }]} icon="landmark" />
+      <PageHero kicker={nav.corporate} title={t.title} text={t.text} crumbs={[{ label: nav.corporate }]} icon="landmark" image={(await getDb(lang)).images.kurumsal ?? undefined} />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         <div className="container-site grid gap-4 sm:grid-cols-2 lg:gap-5">
           {cards.map((c, i) => (

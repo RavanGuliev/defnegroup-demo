@@ -6,10 +6,11 @@ import { ProductCard } from "@/components/cards";
 import Link from "@/components/Link";
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { Breadcrumbs, CtaLink, FinalCta } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db, groupHref, productHref, products, subHref } from "@/lib/data";
+import { groupHref, productHref, subHref } from "@/lib/data";
 import { site } from "@/lib/site";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
+import { RichText } from "@/components/RichText";
 
 const copy = {
   tr: {
@@ -31,29 +32,29 @@ const copy = {
     similarKicker: "Benzer ürünler",
     similar: "Bunlar da ilginizi çekebilir",
   },
-  az: {
-    code: "Məhsul kodu",
-    sampleNote: "Nümunə məhsul qeydidir; təsdiqlənmiş məhsul ailəsi məlumatları və şəkilləri əlavə edildikdə yenilənəcək.",
-    quoteTitle: "Bu məhsul üçün qiymət təklifi alın",
-    quoteText: "Məhsulu Təklif Siyahınıza əlavə edin; say və qeydlərinizlə birlikdə bir formada göndərin.",
-    quoteNow: "Dərhal Təklif İstə",
-    specs: "Texniki xüsusiyyətlər",
-    specsOf: (n: string) => `${n} texniki xüsusiyyətləri`,
-    usage: "İstifadə sahəsi",
-    variants: "Ölçü və variantlar",
-    packaging: "Qablaşdırma",
-    sectors: "Sektorlar",
-    docs: "Sənədlər",
-    docSoon: "Sənəd tezliklə əlavə ediləcək",
-    noDocs: "Bu məhsul üçün sənəd tələbinizi təklif forması ilə göndərə bilərsiniz.",
-    certNote: "Sertifikat və uyğunluq sənədləri yalnız təsdiqlənmiş və aktual olduqda dərc olunur.",
-    similarKicker: "Oxşar məhsullar",
-    similar: "Bunlar da maraqlı ola bilər",
+  en: {
+    code: "Product code",
+    sampleNote: "This is a sample product entry; it will be updated once approved product family information and images are added.",
+    quoteTitle: "Get a price quote for this product",
+    quoteText: "Add the product to your Quote List and send it in a single form with your quantities and notes.",
+    quoteNow: "Request a Quote Now",
+    specs: "Technical specifications",
+    specsOf: (n: string) => `${n} technical specifications`,
+    usage: "Area of use",
+    variants: "Sizes and variants",
+    packaging: "Packaging",
+    sectors: "Sectors",
+    docs: "Documents",
+    docSoon: "Document will be added soon",
+    noDocs: "You can send your document request for this product via the quote form.",
+    certNote: "Certificates and compliance documents are published only when approved and up to date.",
+    similarKicker: "Similar products",
+    similar: "You may also be interested in",
   },
 };
 
-export function generateStaticParams() {
-  return products.map((p) => {
+export async function generateStaticParams() {
+  return (await getDb("tr")).products.filter((p) => p.subSlug).map((p) => {
     const [, , grup, alt, urun] = productHref(p).split("/");
     return { grup, alt, urun };
   });
@@ -61,7 +62,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/urunler/[grup]/[alt]/[urun]">): Promise<Metadata> {
   const { urun } = await params;
-  const p = db(await getLang()).getProduct(urun);
+  const p = (await getDb()).getProduct(urun);
   if (!p) return {};
   return pageMeta(productHref(p), { title: `${p.name} (${p.code})`, description: p.summary });
 }
@@ -69,9 +70,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/urunler/[g
 export default async function ProductPage({ params }: PageProps<"/[lang]/urunler/[grup]/[alt]/[urun]">) {
   const { grup, alt, urun } = await params;
   const lang = await getLang();
-  const t = copy[lang];
-  const dict = getDict(lang);
-  const { getProduct, getSector, getSub, productGroup, subName, products } = db(lang);
+  const t = (await pageCopy("pages.urunler.grup.alt.urun", copy, lang));
+  const dict = (await getDictionary(lang));
+  const { getProduct, getSector, getSub, productGroup, subName, products } = (await getDb(lang));
   const product = getProduct(urun);
   // Hər məhsulun bir əsas səhifəsi var — başqa yoldan açılmır
   if (!product || productHref(product) !== `/urunler/${grup}/${alt}/${urun}`) notFound();
@@ -89,7 +90,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/urunler
     name: product.name,
     sku: product.code,
     mpn: product.code,
-    description: product.description,
+    description: product.description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
     category: `${group.name} > ${subName(sub)}`,
     brand: { "@type": "Organization", name: site.name },
     url: `${site.url}/${lang}${productHref(product)}`,
@@ -128,7 +129,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/urunler
               <p className="mt-3 text-[14px] text-muted">
                 {t.code}: <span className="font-semibold text-ink">{product.code}</span>
               </p>
-              <p className="type-body mt-6">{product.description}</p>
+              <RichText html={product.description} className="mt-6" />
               {product.sample && (
                 <p className="mt-4 rounded-[6px] bg-light px-4 py-3 text-[13px] text-muted">
                   {t.sampleNote}

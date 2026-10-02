@@ -1,10 +1,9 @@
 "use client";
 
+import { useDb, useDict, useSite } from "@/components/SiteData";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
-import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
-import { db, groupHref, pad2 } from "@/lib/data";
+import { groupHref, pad2 } from "@/lib/data";
 import Link from "../Link";
 import { Icon } from "../Icon";
 import { Media } from "../Media";
@@ -14,16 +13,10 @@ import { Media } from "../Media";
  * Slaydlar yalnız vizual sahəni dəyişir. Real şəkillər gəldikdə `image` sahəsinə
  * /images/hero/*.webp yolunu yazmaq kifayətdir.
  */
-// Slayd başlıqları lüğətdədir (dict.hero.slides) — sıra eynidir
-type Slide = { image?: string; groupCodes: string[] };
-
-// Plitələr birbaşa əsas məhsul qruplarına aparır — ilk ekranda qrup keçidi görünür
-const slides: Slide[] = [
-  { groupCodes: ["07", "02", "12"] },
-  { groupCodes: ["01", "08", "16"] },
-  { groupCodes: ["03", "09", "05"] },
-  { groupCodes: ["04", "10", "06"] },
-];
+/*
+ * Slaydlar paneldən gəlir (Site → Ana Sayfa Slaytları): başlıq, fon şəkli və 3 məhsul qrupu.
+ * Plitələr birbaşa əsas məhsul qruplarına aparır — ilk ekranda qrup keçidi görünür.
+ */
 
 // Slaydlar yavaş dəyişir; siçan üzərində / fokusda dayanır, istifadəçi tam dayandıra bilir
 const DURATION = 9000;
@@ -36,6 +29,8 @@ function subscribeMotion(cb: () => void) {
 }
 
 export function HeroCarousel() {
+  const site = useSite();
+  const slides = site.heroSlides.length ? site.heroSlides : [{ label: null, image: null, groupCodes: [] }];
   const [active, setActive] = useState(0);
   const [userPaused, setUserPaused] = useState<boolean | null>(null);
   const reducedMotion = useSyncExternalStore(subscribeMotion, () => window.matchMedia(REDUCED).matches, () => false);
@@ -45,7 +40,8 @@ export function HeroCarousel() {
   const paused = userPaused ?? reducedMotion;
   const running = !paused && !hovering;
   const setPaused = (fn: (p: boolean) => boolean) => setUserPaused(fn(paused));
-  const go = useCallback((dir: number) => setActive((i) => (i + dir + slides.length) % slides.length), []);
+  const count = slides.length;
+  const go = useCallback((dir: number) => setActive((i) => (i + dir + count) % count), [count]);
 
   useEffect(() => {
     if (!running) return;
@@ -54,11 +50,11 @@ export function HeroCarousel() {
   }, [active, running, go]);
 
   const slide = slides[active];
-  const lang = useLang();
-  const d = getDict(lang);
+  const d = useDict();
   const t = d.hero;
-  const { getGroupByCode, groups } = db(lang);
-  const label = t.slides[active];
+  const { getGroupByCode, groups } = useDb();
+  // Başlıq paneldə boşdursa lüğətdəki slayd başlığı
+  const label = slide.label ?? t.slides[active] ?? "";
 
   return (
     <section
@@ -73,7 +69,7 @@ export function HeroCarousel() {
       {slides.map((s, i) => (
         <div key={i} className={`hero-slide absolute inset-0 ${i === active ? "is-active" : ""}`} aria-hidden={i !== active}>
           <div className="hero-photo absolute inset-0">
-            <Media src={s.image} alt="" sizes="100vw" priority={i === 0} iconClassName="hidden" />
+            <Media src={s.image ?? undefined} alt="" sizes="100vw" priority={i === 0} iconClassName="hidden" />
           </div>
         </div>
       ))}
@@ -117,8 +113,9 @@ export function HeroCarousel() {
           {/* Slayda uyğun üç əsas məhsul qrupu — hər plitə qrup səhifəsinə aparır */}
           <div className="hidden md:block">
             <ul key={active} className="grid grid-cols-3 gap-3">
-              {slide.groupCodes.map((code, i) => {
-                const g = getGroupByCode(code)!;
+              {slide.groupCodes.flatMap((code, i) => {
+                const g = getGroupByCode(code);
+                if (!g) return [];
                 return (
                   <li key={code} className="reveal is-visible" style={{ transitionDelay: `${i * 90}ms` }}>
                     <Link

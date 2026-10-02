@@ -3,7 +3,7 @@
  * 12 qruplu demo quruluşundakı ünvanlar qırıq keçidə çevrilmir; 17/107 quruluşundakı
  * uyğun səhifəyə daimi yönləndirilir. next.config.ts bu siyahıdan redirect yaradır.
  */
-import { allProducts, getGroupByCode, getSub, groupHref, productHref, products, subHref } from "./data";
+import { allProducts, groupHref, groups, productHref, products, subcategories, subHref } from "./data";
 
 /** Köhnə kateqoriya slug → yeni qrup və ya alt bölmə kodu. */
 const legacyCategories: Record<string, string> = {
@@ -42,7 +42,7 @@ const legacyProductCategory: Record<string, string> = {
 };
 
 function codeHref(code: string) {
-  return code.includes(".") ? subHref(getSub(code)!) : groupHref(getGroupByCode(code)!);
+  return code.includes(".") ? subHref(subcategories.find((s) => s.code === code)!) : groupHref(groups.find((g) => g.code === code)!);
 }
 
 export function legacyUrlMap(): { source: string; destination: string }[] {
@@ -56,6 +56,6 @@ export function legacyUrlMap(): { source: string; destination: string }[] {
   // Dilsiz köhnə ünvan → /tr/... (sayt əvvəl yalnız türkcə idi); dilli köhnə ünvan → eyni dildə yeni ünvan
   return [...cats, ...prods].flatMap((r) => [
     { source: r.source, destination: `/tr${r.destination}` },
-    { source: `/:lang(tr|az)${r.source}`, destination: `/:lang${r.destination}` },
+    { source: `/:lang(tr|en)${r.source}`, destination: `/:lang${r.destination}` },
   ]);
 }

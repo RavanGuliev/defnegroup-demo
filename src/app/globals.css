@@ -191,3 +191,47 @@ body {
     animation: none;
   }
 }
+
+/* Paneldəki redaktordan gələn zəngin mətn (RichText) */
+@layer components {
+  .rich {
+    @apply text-[15px] leading-[1.7] text-charcoal sm:text-base;
+  }
+  .rich > * + * {
+    @apply mt-4;
+  }
+  .rich h2 {
+    @apply mt-8 text-[22px] leading-[1.25] font-bold tracking-[-0.02em] text-ink sm:text-[26px];
+  }
+  .rich h3 {
+    @apply mt-6 text-[18px] leading-[1.3] font-semibold text-ink sm:text-[20px];
+  }
+  .rich a {
+    @apply font-semibold text-primary underline underline-offset-4;
+  }
+  .rich ul {
+    @apply list-disc space-y-1.5 pl-6;
+  }
+  .rich ol {
+    @apply list-decimal space-y-1.5 pl-6;
+  }
+  .rich li > p {
+    @apply m-0;
+  }
+  .rich blockquote {
+    @apply border-l-2 border-primary pl-4 text-muted italic;
+  }
+  .rich img {
+    @apply h-auto max-w-full rounded-[6px];
+  }
+  .rich table {
+    @apply block w-full overflow-x-auto border-collapse text-left text-[14px];
+  }
+  .rich th,
+  .rich td {
+    @apply border border-line px-3 py-2 align-top;
+  }
+  .rich th {
+    @apply bg-light font-semibold text-ink;
+  }
+}

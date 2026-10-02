@@ -2,13 +2,15 @@ import { ArrowRight } from "lucide-react";
 import { GroupCard, ProductCard } from "@/components/cards";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { SolutionsAccordion } from "@/components/home/SolutionsAccordion";
+import { FairsSection } from "@/components/home/FairsSection";
+import { LocationSection } from "@/components/home/LocationSection";
 import { Icon } from "@/components/Icon";
 import Link from "@/components/Link";
 import { Reveal } from "@/components/Reveal";
 import { CtaLink, FinalCta, SectionHeading } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { allProductsHref, db, pad2 } from "@/lib/data";
+import { allProductsHref, pad2 } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -30,26 +32,60 @@ const copy = {
     featuredTitle: "Seçilmiş ürünler",
     featuredText: "Yeni, çok talep gören ve stratejik ürünlerimizden bir seçki.",
     allProducts: "Tüm ürünler",
+    fairsKicker: "Sektörel görünürlük",
+    fairsTitle: "Fuarlar",
+    fairsText: "Sektördeki etkinliklerden ve saha buluşmalarından seçmeler.",
+    fairsOpenGallery: "Galeriyi aç",
+    fairsClose: "Galeriyi kapat",
+    fairsPrev: "Önceki fotoğraf",
+    fairsNext: "Sonraki fotoğraf",
+    locationKicker: "Konum",
+    locationTitle: "Merkezimizi ziyaret edin",
+    locationText: "Ürün, tedarik ve teklif talepleriniz için merkezimizi ziyaret edebilir veya bize doğrudan ulaşabilirsiniz.",
+    locationAddress: "Adres",
+    locationHours: "Çalışma saatleri",
+    locationPhone: "Doğrudan arayın",
+    locationDirections: "Yol tarifi al",
+    locationViewMap: "Haritada görüntüle",
+    locationContactKicker: "İletişim",
+    locationContactLink: "Bize ulaşın",
   },
-  az: {
-    trustAria: "Niyə DEFNE GROUP",
-    groupsKicker: "Məhsullarımız",
-    groupsText: "Dövlət və özəl sektorun müxtəlif ehtiyaclarına yönəlik məhsul qruplarımıza baxın.",
-    groupsMeta: (n: number) => `${n} əsas məhsul qrupu`,
-    searchByCode: "Məhsul adı və ya kodu ilə axtar",
-    solutionsTitle: "Ehtiyaca görə kompleks həllər",
-    solutionsText: "Ayrı-ayrı məhsullar əvəzinə ehtiyacınızı təhlil edir, məhsulu, texniki həlli və çatdırılmanı bir layihə kimi planlaşdırırıq.",
-    allSolutions: "Bütün həll sahələri",
-    sectorsTitle: "Xidmət göstərdiyimiz sektorlar",
-    sectorsText: "Hər sektorun qanunvericiliyinə, satınalma prosesinə və istifadə şərtlərinə uyğun təchizat yanaşması.",
-    allSectors: "Bütün sektorlar",
-    processKicker: "İş Prosesimiz",
-    processTitle: "Ehtiyacdan çatdırılmaya dörd addım",
-    processText: "Hər sorğunu eyni intizamla, qeydiyyatla və şəffaf şəkildə idarə edirik.",
-    featuredKicker: "Önə Çıxanlar",
-    featuredTitle: "Seçilmiş məhsullar",
-    featuredText: "Yeni, çox tələb olunan və strateji məhsullarımızdan seçmələr.",
-    allProducts: "Bütün məhsullar",
+  en: {
+    trustAria: "Why DEFNE GROUP",
+    groupsKicker: "Our Products",
+    groupsText: "Explore our product groups serving the diverse needs of the public and private sectors.",
+    groupsMeta: (n: number) => `${n} main product groups`,
+    searchByCode: "Search by product name or code",
+    solutionsTitle: "Complete solutions built around your needs",
+    solutionsText: "Instead of individual products, we analyse your needs and plan the product, technical solution and delivery as a single project.",
+    allSolutions: "All solution areas",
+    sectorsTitle: "Sectors we serve",
+    sectorsText: "A supply approach aligned with each sector’s regulations, procurement process and conditions of use.",
+    allSectors: "All sectors",
+    processKicker: "Our Process",
+    processTitle: "Four steps from need to delivery",
+    processText: "We manage every request with the same discipline, fully documented and transparent.",
+    featuredKicker: "Highlights",
+    featuredTitle: "Featured products",
+    featuredText: "A selection of our new, in-demand and strategic products.",
+    allProducts: "All products",
+    fairsKicker: "Industry presence",
+    fairsTitle: "Trade Fairs",
+    fairsText: "Highlights from industry events and on-site meetings.",
+    fairsOpenGallery: "Open gallery",
+    fairsClose: "Close gallery",
+    fairsPrev: "Previous image",
+    fairsNext: "Next image",
+    locationKicker: "Location",
+    locationTitle: "Visit our office",
+    locationText: "For product, supply and quotation requests, you can visit our office or contact us directly.",
+    locationAddress: "Address",
+    locationHours: "Working hours",
+    locationPhone: "Call us directly",
+    locationDirections: "Get directions",
+    locationViewMap: "View on map",
+    locationContactKicker: "Contact",
+    locationContactLink: "Contact us",
   },
 };
 
@@ -59,9 +95,9 @@ export async function generateMetadata() {
 
 export default async function HomePage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
-  const { groups, processSteps, products, sectors, solutions, trustItems } = db(lang);
+  const t = (await pageCopy("pages.home", copy, lang));
+  const d = (await getDictionary(lang));
+  const { groups, processSteps, products, sectors, solutions, trustItems, site } = (await getDb(lang));
   // Ana səhifədə seçilmiş qruplar; tam siyahı “Tüm 17 Ürün Grubunu Gör” ilə açılır
   const featuredGroups = groups.filter((g) => g.featured).slice(0, 8);
   // Seçilmiş məhsullar — gələcəkdə admin panelindən seçiləcək
@@ -167,11 +203,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 04 — İş süreci */}
+      {/* 04 — Fuarlar: paneldə şəkil əlavə olunduqda (Site → Fuar Galerisi) */}
+      {site.fairPhotos.length > 0 && (
+        <FairsSection
+          photos={site.fairPhotos}
+          heading={<SectionHeading index="04" kicker={t.fairsKicker} title={t.fairsTitle} text={t.fairsText} />}
+          t={{ title: t.fairsTitle, openGallery: t.fairsOpenGallery, close: t.fairsClose, prev: t.fairsPrev, next: t.fairsNext }}
+        />
+      )}
+
+      {/* 05 — İş süreci */}
       <section className="section-home leaf-motif relative bg-navy text-white">
         <div className="container-site">
           <SectionHeading
-            index="04"
+            index="05"
             kicker={t.processKicker}
             title={t.processTitle}
             text={t.processText}
@@ -195,11 +240,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 05 — Seçilmiş ürünler */}
+      {/* 06 — Seçilmiş ürünler */}
       <section className="section-home bg-white">
         <div className="container-site">
           <SectionHeading
-            index="05"
+            index="06"
             kicker={t.featuredKicker}
             title={t.featuredTitle}
             text={t.featuredText}
@@ -214,6 +259,26 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 07 — Konum: paneldə ünvan / xəritə doldurulduqda (Site Ayarları) */}
+      <LocationSection
+        index="07"
+        lang={lang}
+        contact={site.contact}
+        show={site.showLocation}
+        t={{
+          kicker: t.locationKicker,
+          title: t.locationTitle,
+          text: t.locationText,
+          address: t.locationAddress,
+          hours: t.locationHours,
+          phone: t.locationPhone,
+          directions: t.locationDirections,
+          viewMap: t.locationViewMap,
+          contactKicker: t.locationContactKicker,
+          contactLink: t.locationContactLink,
+        }}
+      />
 
       <FinalCta />
     </>

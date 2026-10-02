@@ -4,9 +4,10 @@ import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/cards";
 import Link from "@/components/Link";
 import { CtaLink, FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { allProductsHref, db, pad2, sectors } from "@/lib/data";
+import { allProductsHref, pad2 } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
+import { RichText } from "@/components/RichText";
 
 const copy = {
   tr: {
@@ -17,23 +18,23 @@ const copy = {
     productsTitle: "Sık tercih edilen ürünler",
     allInSector: "Bu sektördeki tüm ürünler",
   },
-  az: {
-    kicker: "Sektor",
-    solutionsKicker: "Həllər",
-    solutionsTitle: "Bu sektora xüsusi həll sahələri",
-    productsKicker: "Məhsullar",
-    productsTitle: "Tez-tez seçilən məhsullar",
-    allInSector: "Bu sektordakı bütün məhsullar",
+  en: {
+    kicker: "Sector",
+    solutionsKicker: "Solutions",
+    solutionsTitle: "Solution areas for this sector",
+    productsKicker: "Products",
+    productsTitle: "Frequently chosen products",
+    allInSector: "All products in this sector",
   },
 };
 
-export function generateStaticParams() {
-  return sectors.map((s) => ({ slug: s.slug }));
+export async function generateStaticParams() {
+  return (await getDb("tr")).sectors.map((s) => ({ slug: s.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/sektorler/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const s = db(await getLang()).getSector(slug);
+  const s = (await getDb()).getSector(slug);
   if (!s) return {};
   return pageMeta(`/sektorler/${s.slug}`, { title: s.name, description: s.description });
 }
@@ -41,9 +42,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/sektorler/
 export default async function SectorPage({ params }: PageProps<"/[lang]/sektorler/[slug]">) {
   const { slug } = await params;
   const lang = await getLang();
-  const t = copy[lang];
-  const nav = getDict(lang).nav;
-  const { getSector, productsInSector, solutions } = db(lang);
+  const t = (await pageCopy("pages.sektorler.slug", copy, lang));
+  const nav = (await getDictionary(lang)).nav;
+  const { getSector, productsInSector, solutions } = (await getDb(lang));
   const sector = getSector(slug);
   if (!sector) notFound();
   const sols = solutions.filter((s) => s.sectorSlugs.includes(sector.slug));
@@ -51,7 +52,15 @@ export default async function SectorPage({ params }: PageProps<"/[lang]/sektorle
 
   return (
     <>
-      <PageHero kicker={t.kicker} title={sector.name} text={sector.description} crumbs={[{ label: nav.sectors, href: "/sektorler" }, { label: sector.name }]} icon={sector.icon} />
+      <PageHero kicker={t.kicker} title={sector.name} text={sector.description} crumbs={[{ label: nav.sectors, href: "/sektorler" }, { label: sector.name }]} icon={sector.icon} image={sector.image} />
+
+      {sector.content && (
+        <section className="bg-white pt-14 sm:pt-16 lg:pt-20">
+          <div className="container-site max-w-[860px]">
+            <RichText html={sector.content} />
+          </div>
+        </section>
+      )}
 
       {sols.length > 0 && (
         <section className="bg-white py-14 sm:py-16 lg:py-[112px]">

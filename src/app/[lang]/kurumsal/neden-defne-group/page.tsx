@@ -2,9 +2,9 @@ import { Boxes, FileSearch, Handshake, MapPinned, ShieldCheck, Workflow } from "
 import { KurumsalNav } from "@/components/KurumsalNav";
 import { Reveal } from "@/components/Reveal";
 import { FinalCta, PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
 import { pad2 } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -19,16 +19,16 @@ const copy = {
       { title: "Türkiye geneli hizmet", text: "Planlı lojistik ile farklı illerdeki kurumlara teslimat." },
     ],
   },
-  az: {
-    description: "Qurumların DEFNE GROUP-u seçmə səbəbləri.",
-    text: "Qurumların təchizat proseslərində etibarla işləyə biləcəyi tərəfdaş olmaq üçün.",
+  en: {
+    description: "Why institutions choose DEFNE GROUP.",
+    text: "To be a partner institutions can rely on in their supply processes.",
     reasons: [
-      { title: "Geniş məhsul portfeli", text: "Müxtəlif ehtiyaclar üçün bir çox məhsul qrupunu bir təchizatçıdan əldə edin." },
-      { title: "Bir mərkəzdən idarəetmə", text: "Ehtiyac təhlilindən çatdırılmaya qədər vahid əlaqə nöqtəsi, vahid proses." },
-      { title: "Şərtnaməyə uyğunluq", text: "Texniki şərtnamənizi araşdırıb uyğun məhsul və alternativləri təqdim edirik." },
-      { title: "Layihəyə xüsusi həllər", text: "Standart məhsulun kifayət etmədiyi yerdə ehtiyaca uyğun həll hazırlayırıq." },
-      { title: "Şəffaf və qeydiyyatlı proses", text: "Hər sorğu nömrələnir; status addım-addım izlənilir." },
-      { title: "Türkiyə üzrə xidmət", text: "Planlı logistika ilə müxtəlif bölgələrdəki qurumlara çatdırılma." },
+      { title: "Broad product portfolio", text: "Source many product groups for different needs from a single supplier." },
+      { title: "Single-point management", text: "One point of contact and one process, from needs analysis to delivery." },
+      { title: "Specification compliance", text: "We review your technical specification and offer suitable products and alternatives." },
+      { title: "Project-specific solutions", text: "Where a standard product is not enough, we develop a solution tailored to the need." },
+      { title: "Transparent, documented process", text: "Every request is numbered and its status is tracked step by step." },
+      { title: "Service across Türkiye", text: "Delivery to institutions in different regions with planned logistics." },
     ],
   },
 };
@@ -37,16 +37,16 @@ const icons = [Boxes, Workflow, FileSearch, Handshake, ShieldCheck, MapPinned];
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/kurumsal/neden-defne-group", { title: getDict(lang).nav.why, description: copy[lang].description });
+  return pageMeta("/kurumsal/neden-defne-group", { title: (await getDictionary(lang)).nav.why, description: (await pageCopy("pages.kurumsal.nedenDefneGroup", copy, lang)).description });
 }
 
 export default async function WhyPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const nav = getDict(lang).nav;
+  const t = (await pageCopy("pages.kurumsal.nedenDefneGroup", copy, lang));
+  const nav = (await getDictionary(lang)).nav;
   return (
     <>
-      <PageHero kicker={nav.corporate} title={nav.why} text={t.text} crumbs={[{ label: nav.corporate, href: "/kurumsal" }, { label: nav.why }]} icon="shield" />
+      <PageHero kicker={nav.corporate} title={nav.why} text={t.text} crumbs={[{ label: nav.corporate, href: "/kurumsal" }, { label: nav.why }]} icon="shield" image={(await getDb(lang)).images.nedenDefne ?? undefined} />
       <KurumsalNav active="/kurumsal/neden-defne-group" />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         <div className="container-site grid gap-px overflow-hidden rounded-[8px] border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">

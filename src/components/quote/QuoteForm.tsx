@@ -1,20 +1,19 @@
 "use client";
 
+import { useDb, useDict, useSite } from "@/components/SiteData";
 import { useRef, useState } from "react";
 import { CheckCircle2, FileUp, Minus, Plus, Trash2, X } from "lucide-react";
 import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
-import { db, productHref } from "@/lib/data";
-import { site } from "@/lib/site";
+import { submitQuote } from "@/lib/api";
+import { productHref } from "@/lib/data";
 import Link from "../Link";
 import { Media } from "../Media";
 import { quoteUnits, useQuote } from "../QuoteProvider";
 
 /*
  * Teklif sorğusu (sənəd, bölmə 6.2).
- * Bu mərhələdə yalnız frontend: göndəriş simulyasiya olunur və unikal müraciət nömrəsi
- * brauzerdə yaradılır. Backend mərhələsində `submitQuote` API-yə bağlanacaq:
- * teklif@defnegroup.com-a e-poçt, admin panelində qeyd və təsdiq e-poçtu.
+ * Göndəriş Laravel API-yə gedir (src/lib/api.ts): sorğu panelə yazılır, müraciət nömrəsi
+ * serverdə yaradılır, DEFNE-yə bildiriş və müştəriyə təsdiq e-poçtu göndərilir.
  * Statuslar: Yeni Talep → İnceleniyor → Teklif Hazırlanıyor → Teklif Gönderildi → Sonuçlandı
  */
 
@@ -24,25 +23,10 @@ const MAX_FILES = 5;
 
 type Errors = Partial<Record<string, string>>;
 
-function makeRequestNo() {
-  const d = new Date();
-  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-  const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
-  return `DG-${ymd}-${rand}`;
-}
-
-// TODO(backend): POST /api/teklif — nömrə server tərəfində yaradılmalıdır
-async function submitQuote(data: FormData): Promise<{ requestNo: string }> {
-  void data;
-  await new Promise((r) => setTimeout(r, 900));
-  return { requestNo: makeRequestNo() };
-}
-
 export function QuoteList() {
   const { items, remove, update } = useQuote();
-  const lang = useLang();
-  const t = getDict(lang).quote;
-  const { getProduct, productGroup } = db(lang);
+  const t = useDict().quote;
+  const { getProduct, productGroup } = useDb();
 
   if (!items.length) {
     return (
@@ -146,7 +130,9 @@ export function QuoteList() {
 
 export function QuoteForm() {
   const { items, clear } = useQuote();
-  const t = getDict(useLang()).quote;
+  const lang = useLang();
+  const t = useDict().quote;
+  const site = useSite();
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState("");
   const [errors, setErrors] = useState<Errors>({});
@@ -204,11 +190,21 @@ export function QuoteForm() {
       (ev.currentTarget.elements.namedItem(first) as HTMLElement | null)?.focus();
       return;
     }
-    fd.set("urunler", JSON.stringify(items));
-    files.forEach((f) => fd.append("dosyalar", f));
     setStatus("sending");
-    const res = await submitQuote(fd);
-    setRequestNo(res.requestNo);
+    const res = await submitQuote(lang, fd, items, files);
+    if (!res.ok) {
+      setStatus("idle");
+      if (res.network) {
+        setErrors({ form: t.networkError });
+        return;
+      }
+      setErrors(res.errors);
+      const first = Object.keys(res.errors)[0];
+      if (first === "dosyalar") setFileError(res.errors.dosyalar ?? "");
+      else (formRef.current?.elements.namedItem(first) as HTMLElement | null)?.focus();
+      return;
+    }
+    setRequestNo(res.data.request_no);
     setStatus("done");
     clear();
     setFiles([]);
@@ -386,6 +382,11 @@ export function QuoteForm() {
         {err("kvkk")}
       </div>
 
+      {errors.form && (
+        <p role="alert" className="rounded-[6px] border border-red-200 bg-red-50 px-4 py-3 text-[14px] font-medium text-red-800 sm:col-span-2">
+          {errors.form}
+        </p>
+      )}
       <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[13px] text-muted">
           {t.sentToA} <span className="font-semibold text-ink">{site.contact.quoteEmail}</span> {t.sentToB}

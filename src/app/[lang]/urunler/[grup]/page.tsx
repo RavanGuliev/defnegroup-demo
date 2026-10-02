@@ -4,9 +4,9 @@ import Link from "@/components/Link";
 import { Media } from "@/components/Media";
 import { CatalogHeader } from "@/components/products/CatalogHeader";
 import { CtaLink, FinalCta } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db, groupHref, groups } from "@/lib/data";
+import { groupHref } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -18,24 +18,24 @@ const copy = {
     related: "Bu ürün grubunu içeren çözüm alanları",
     allGroups: "Tüm ürün grupları",
   },
-  az: {
-    kicker: "Məhsul qrupu",
-    preparing: "Bu qrupun alt kateqoriya məzmunu və şəkilləri hazırlanır. Ehtiyacınızı təklif forması ilə göndərə bilərsiniz.",
-    linked: "Digər qruplardan əlaqəli məhsullar",
-    linkedText: "Bu məhsulların əsas qeydi aid olduğu məhsul qrupundadır.",
-    relatedKicker: "Əlaqəli həllər",
-    related: "Bu məhsul qrupunu əhatə edən həll sahələri",
-    allGroups: "Bütün məhsul qrupları",
+  en: {
+    kicker: "Product group",
+    preparing: "Subcategory content and images for this group are being prepared. You can send your request using the quote form.",
+    linked: "Related products from other groups",
+    linkedText: "These products are primarily listed in the product group they belong to.",
+    relatedKicker: "Related solutions",
+    related: "Solution areas covering this product group",
+    allGroups: "All product groups",
   },
 };
 
-export function generateStaticParams() {
-  return groups.map((g) => ({ grup: g.slug }));
+export async function generateStaticParams() {
+  return (await getDb("tr")).groups.map((g) => ({ grup: g.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/urunler/[grup]">) {
   const { grup } = await params;
-  const g = db(await getLang()).getGroup(grup);
+  const g = (await getDb()).getGroup(grup);
   if (!g) return {};
   return pageMeta(groupHref(g), { title: g.name });
 }
@@ -44,9 +44,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/urunler/[g
 export default async function GroupPage({ params }: PageProps<"/[lang]/urunler/[grup]">) {
   const { grup } = await params;
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
-  const { getGroup, subsOfGroup, productsInGroup, linkedProductsForGroup, solutions } = db(lang);
+  const t = (await pageCopy("pages.urunler.grup", copy, lang));
+  const d = (await getDictionary(lang));
+  const { getGroup, subsOfGroup, productsInGroup, linkedProductsForGroup, solutions } = (await getDb(lang));
   const group = getGroup(grup);
   if (!group) notFound();
   const subs = subsOfGroup(group.code);

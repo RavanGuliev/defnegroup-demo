@@ -4,9 +4,9 @@ import Link from "@/components/Link";
 import { CatalogHeader } from "@/components/products/CatalogHeader";
 import { FinalCta } from "@/components/ui";
 import { withLocale } from "@/i18n/config";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { allProductsHref, db } from "@/lib/data";
+import { allProductsHref } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -16,26 +16,26 @@ const copy = {
     meta: (g: number, s: number, p: number) => `${g} ana ürün grubu · ${s} alt kategori · ${p} ürün`,
     search: "Ürün adı veya ürün kodu ile ara",
   },
-  az: {
-    description: "DEFNE GROUP məhsul qrupları: 17 əsas məhsul qrupu və alt kateqoriyaları. Bütün məhsullarda ad və ya kodla axtarış edin.",
-    kicker: "Portfel",
-    text: "Dövlət qurumları və özəl sektor üçün məhsul qruplarımıza baxın; alt kateqoriyalardan məhsullara keçin və ehtiyacınız olanları Təklif Siyahınıza əlavə edin.",
-    meta: (g: number, s: number, p: number) => `${g} əsas məhsul qrupu · ${s} alt kateqoriya · ${p} məhsul`,
-    search: "Məhsul adı və ya məhsul kodu ilə axtar",
+  en: {
+    description: "DEFNE GROUP product groups: 17 main product groups and their subcategories. Search all products by name or code.",
+    kicker: "Portfolio",
+    text: "Explore our product groups for public institutions and the private sector; move from subcategories to products and add what you need to your Quote List.",
+    meta: (g: number, s: number, p: number) => `${g} main product groups · ${s} subcategories · ${p} products`,
+    search: "Search by product name or product code",
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/urunler", { title: getDict(lang).nav.productGroups, description: copy[lang].description });
+  return pageMeta("/urunler", { title: (await getDictionary(lang)).nav.productGroups, description: (await pageCopy("pages.urunler", copy, lang)).description });
 }
 
 /* Ürün Grupları girişi — bütün 17 qrup təsdiqlənmiş sıra ilə şəkilli kartlarda */
 export default async function ProductGroupsPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
-  const { groups, subcategories, products } = db(lang);
+  const t = (await pageCopy("pages.urunler", copy, lang));
+  const d = (await getDictionary(lang));
+  const { groups, subcategories, products } = (await getDb(lang));
 
   return (
     <>

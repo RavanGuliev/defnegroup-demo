@@ -1,9 +1,8 @@
 import { Icon } from "@/components/Icon";
 import { QuoteForm, QuoteList } from "@/components/quote/QuoteForm";
 import { Breadcrumbs } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { db } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -18,30 +17,30 @@ const copy = {
     processNote:
       "Her talep için benzersiz bir müracaat numarası oluşturulur ve e-posta ile onay gönderilir. Talep durumu: Yeni Talep → İnceleniyor → Teklif Hazırlanıyor → Teklif Gönderildi → Sonuçlandı.",
   },
-  az: {
-    description: "Seçdiyiniz məhsullar üçün qeydiyyatsız təklif sorğusu yaradın; texniki şərtnamə və məhsul siyahınızı yükləyin.",
-    kicker: "Təklif Sorğusu",
-    text: "Qeydiyyat tələb olunmadan məhsullarınızı siyahıya salın, say və qeydlərinizi əlavə edin; texniki şərtnamənizlə birlikdə bir formada göndərin.",
-    selected: "Seçilmiş məhsullar",
-    form: "Sorğu forması",
-    required: "Mütləq sahələr * ilə işarələnib.",
-    processKicker: "Proses",
-    processTitle: "Sorğunuz necə irəliləyir?",
+  en: {
+    description: "Create a quote request for your selected products without registering; upload your technical specification and product list.",
+    kicker: "Quote Request",
+    text: "List your products without registering, add quantities and notes, and send them in a single form together with your technical specification.",
+    selected: "Selected products",
+    form: "Request form",
+    required: "Required fields are marked with *.",
+    processKicker: "Process",
+    processTitle: "How does your request progress?",
     processNote:
-      "Hər sorğu üçün unikal müraciət nömrəsi yaradılır və e-poçtla təsdiq göndərilir. Sorğunun statusu: Yeni Sorğu → Araşdırılır → Təklif Hazırlanır → Təklif Göndərildi → Nəticələndi.",
+      "A unique reference number is created for each request and a confirmation is sent by email. Request status: New Request → Under Review → Preparing Quote → Quote Sent → Completed.",
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/teklif-listem", { title: getDict(lang).common.quoteList, description: copy[lang].description, robots: { index: false } });
+  return pageMeta("/teklif-listem", { title: (await getDictionary(lang)).common.quoteList, description: (await pageCopy("pages.teklifListem", copy, lang)).description, robots: { index: false } });
 }
 
 export default async function QuotePage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
-  const { processSteps } = db(lang);
+  const t = (await pageCopy("pages.teklifListem", copy, lang));
+  const d = (await getDictionary(lang));
+  const { processSteps } = (await getDb(lang));
   return (
     <>
       <section className="border-b border-line bg-light">

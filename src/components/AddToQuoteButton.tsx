@@ -1,15 +1,14 @@
 "use client";
 
+import { useDict } from "@/components/SiteData";
 import { Check, Plus } from "lucide-react";
-import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
 import Link from "./Link";
 import { useQuote } from "./QuoteProvider";
 
 export function AddToQuoteButton({ slug, size = "md", className = "" }: { slug: string; size?: "sm" | "md"; className?: string }) {
   const { has, add } = useQuote();
   const inList = has(slug);
-  const t = getDict(useLang()).quoteButton;
+  const t = useDict().quoteButton;
 
   if (size === "sm") {
     return inList ? (

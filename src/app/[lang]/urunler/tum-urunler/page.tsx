@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import { CatalogHeader } from "@/components/products/CatalogHeader";
 import { ProductExplorer } from "@/components/products/ProductExplorer";
 import { FinalCta } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { allProductsHref, db } from "@/lib/data";
+import { allProductsHref } from "@/lib/data";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -13,24 +13,24 @@ const copy = {
     text: "Ürün adı veya kodu ile arayın; ürün grubu ve alt kategoriye göre filtreleyin.",
     meta: (n: number) => `${n} ürün`,
   },
-  az: {
-    description: "DEFNE GROUP bütün məhsullar: məhsul adı və ya kodu ilə axtarın; məhsul qrupu, alt kateqoriya, sektor və istifadə sahəsinə görə filtrləyin.",
-    kicker: "Məhsul axtarışı",
-    text: "Məhsul adı və ya kodu ilə axtarın; məhsul qrupu və alt kateqoriyaya görə filtrləyin.",
-    meta: (n: number) => `${n} məhsul`,
+  en: {
+    description: "All DEFNE GROUP products: search by product name or code; filter by product group, subcategory, sector and area of use.",
+    kicker: "Product search",
+    text: "Search by product name or code; filter by product group and subcategory.",
+    meta: (n: number) => `${n} ${n === 1 ? "product" : "products"}`,
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta(allProductsHref, { title: getDict(lang).common.allProducts, description: copy[lang].description });
+  return pageMeta(allProductsHref, { title: (await getDictionary(lang)).common.allProducts, description: (await pageCopy("pages.urunler.tumUrunler", copy, lang)).description });
 }
 
 /* Ümumi axtarış və məhsul filtri — qrupları gəzmədən ad və kodla axtarış */
 export default async function AllProductsPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
+  const t = (await pageCopy("pages.urunler.tumUrunler", copy, lang));
+  const d = (await getDictionary(lang));
   return (
     <>
       <CatalogHeader
@@ -38,7 +38,7 @@ export default async function AllProductsPage() {
         title={d.common.allProducts}
         text={t.text}
         crumbs={[{ label: d.nav.productGroups, href: "/urunler" }, { label: d.common.allProducts }]}
-        meta={t.meta(db(lang).products.length)}
+        meta={t.meta((await getDb(lang)).products.length)}
       />
       <section className="bg-white py-8 sm:py-10 lg:py-14">
         <div className="container-site">

@@ -3,14 +3,14 @@ import { defaultLocale, hasLocale } from "@/i18n/config";
 
 /*
  * Dil prefiksi olmayan ünvanları uyğun dilə yönləndirir: brauzer dili Azərbaycan dilidirsə
- * /az, əks halda /tr. Köhnə demo ünvanları next.config.ts-dəki redirect-lərlə əvvəlcədən həll olunur.
+ * /en, əks halda /tr (Türk brauzerləri və digərləri). Köhnə demo ünvanları next.config.ts-dəki redirect-lərlə əvvəlcədən həll olunur.
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (hasLocale(pathname.split("/")[1])) return;
 
-  const prefersAz = /^az\b/i.test(request.headers.get("accept-language") ?? "");
-  const lang = prefersAz ? "az" : defaultLocale;
+  const prefersEn = /^en\b/i.test(request.headers.get("accept-language") ?? "");
+  const lang = prefersEn ? "en" : defaultLocale;
   request.nextUrl.pathname = `/${lang}${pathname === "/" ? "" : pathname}`;
   return NextResponse.redirect(request.nextUrl);
 }

@@ -2,9 +2,9 @@ import { ClipboardList, Clock, Mail, MapPin, Phone } from "lucide-react";
 import { ContactForm } from "@/components/ContactForm";
 import Link from "@/components/Link";
 import { PageHero } from "@/components/ui";
-import { getDict } from "@/i18n/dictionaries";
 import { getLang, pageMeta } from "@/i18n/server";
-import { site } from "@/lib/site";
+import { telHref } from "@/lib/site";
+import { getDb, getDictionary, pageCopy } from "@/lib/cms";
 
 const copy = {
   tr: {
@@ -23,40 +23,42 @@ const copy = {
     formKicker: "İletişim formu",
     formTitle: "Mesaj gönderin",
   },
-  az: {
-    description: "Məhsul, təchizat və təklif sorğularınız üçün DEFNE GROUP ilə əlaqə saxlayın.",
-    title: "Bizimlə əlaqə",
-    text: "Məhsul, təchizat, texniki dəstək və ya təklif sorğularınız üçün komandamızla əlaqə saxlaya bilərsiniz.",
-    email: "E-poçt",
-    quotes: "Təklif sorğuları",
-    phone: "Telefon",
-    address: "Ünvan",
-    hours: "İş saatları",
-    directKicker: "Birbaşa əlaqə",
-    directTitle: "Birbaşa əlaqə saxlayın",
-    quoteTitle: "Qiymət təklifi almaq istəyirsiniz?",
-    quoteText: "Məhsulları Təklif Siyahınıza əlavə edin və ya texniki şərtnamənizi yükləyin.",
-    formKicker: "Əlaqə forması",
-    formTitle: "Mesaj göndərin",
+  en: {
+    description: "Contact DEFNE GROUP for product, supply and quotation requests.",
+    title: "Contact us",
+    text: "You can reach our team for product, supply, technical support or quotation requests.",
+    email: "Email",
+    quotes: "Quotation requests",
+    phone: "Phone",
+    address: "Address",
+    hours: "Working hours",
+    directKicker: "Direct contact",
+    directTitle: "Get in touch directly",
+    quoteTitle: "Would you like a price quote?",
+    quoteText: "Add products to your Quote List or upload your technical specification.",
+    formKicker: "Contact form",
+    formTitle: "Send a message",
   },
 };
 
 export async function generateMetadata() {
   const lang = await getLang();
-  return pageMeta("/iletisim", { title: getDict(lang).nav.contact, description: copy[lang].description });
+  return pageMeta("/iletisim", { title: (await getDictionary(lang)).nav.contact, description: (await pageCopy("pages.iletisim", copy, lang)).description });
 }
 
 export default async function ContactPage() {
   const lang = await getLang();
-  const t = copy[lang];
-  const d = getDict(lang);
-  const c = site.contact;
+  const t = (await pageCopy("pages.iletisim", copy, lang));
+  const d = (await getDictionary(lang));
+  const db = await getDb(lang);
+  const c = db.site.contact;
+  // Yalnız paneldə doldurulmuş (təsdiqlənmiş) əlaqə məlumatları göstərilir
   const cards = [
-    { icon: Mail, label: t.email, value: c.email, href: `mailto:${c.email}` },
-    { icon: ClipboardList, label: t.quotes, value: c.quoteEmail, href: `mailto:${c.quoteEmail}` },
-    ...(c.phone ? [{ icon: Phone, label: t.phone, value: c.phone, href: `tel:${c.phoneHref}` }] : []),
-    ...(c.address ? [{ icon: MapPin, label: t.address, value: c.address, href: undefined }] : []),
-    ...(c.hours.length ? [{ icon: Clock, label: t.hours, value: c.hours.join(" · "), href: undefined }] : []),
+    ...(c.email ? [{ icon: Mail, label: t.email, value: c.email, href: `mailto:${c.email}` }] : []),
+    ...(c.quoteEmail ? [{ icon: ClipboardList, label: t.quotes, value: c.quoteEmail, href: `mailto:${c.quoteEmail}` }] : []),
+    ...(c.phone ? [{ icon: Phone, label: t.phone, value: c.phone, href: telHref(c.phone) }] : []),
+    ...(c.address ? [{ icon: MapPin, label: t.address, value: c.address, href: c.mapUrl ?? undefined }] : []),
+    ...(c.workingHours ? [{ icon: Clock, label: t.hours, value: c.workingHours, href: undefined }] : []),
   ];
 
   return (
@@ -67,6 +69,7 @@ export default async function ContactPage() {
         text={t.text}
         crumbs={[{ label: d.nav.contact }]}
         icon="building"
+        image={db.images.iletisim ?? undefined}
       />
       <section className="bg-white py-14 sm:py-16 lg:py-[112px]">
         <div className="container-site grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-16">

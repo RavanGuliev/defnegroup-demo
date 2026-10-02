@@ -1,19 +1,26 @@
 "use client";
 
-import { useLang } from "@/i18n/client";
-import { getDict } from "@/i18n/dictionaries";
+import { useDict, useSite } from "@/components/SiteData";
 import Link from "./Link";
 
 /*
- * Müvəqqəti yazı loqosu.
- * Sənədə görə (bölmə 3) yalnız DEFNE GROUP-un təqdim edəcəyi təsdiqlənmiş tam loqo
- * istifadə olunacaq. Loqo faylı gəldikdə `public/logo/defne-group.svg` kimi əlavə edib
- * aşağıdakı <span> blokunu <Image> ilə əvəz edin.
+ * Loqo paneldən gəlir (Site Ayarları → Marka): açıq fonda "logo", tünd fonda (slayd, footer)
+ * "logo_light". Yüklənməyibsə müvəqqəti yazı loqosu göstərilir.
  */
 export function Logo({ tone = "dark", className = "" }: { tone?: "dark" | "light"; className?: string }) {
   const main = tone === "light" ? "text-white" : "text-ink";
   const sub = tone === "light" ? "text-white/60" : "text-muted";
-  const t = getDict(useLang()).common;
+  const t = useDict().common;
+  const site = useSite();
+  const src = tone === "light" ? (site.logoLight ?? site.logo) : (site.logo ?? site.logoLight);
+  if (src) {
+    return (
+      <Link href="/" aria-label={t.logoAria} className={`inline-flex min-h-11 min-w-0 items-center ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- SVG loqo, ölçü CSS ilə */}
+        <img src={src} alt={site.name} className="h-9 w-auto max-w-[200px] object-contain sm:h-11 sm:max-w-[240px]" />
+      </Link>
+    );
+  }
   return (
     <Link href="/" aria-label={t.logoAria} className={`inline-flex min-h-11 min-w-0 flex-col justify-center leading-none ${className}`}>
       <span className={`text-[22px] font-extrabold tracking-[-0.03em] sm:text-[24px] ${main}`}>
